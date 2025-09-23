@@ -1,4 +1,4 @@
-INSERT INTO books (BookID, title, author) VALUES:
+INSERT INTO books (BookID, title, author) VALUES
 ('b1a7e8e2-1c2a-4e3b-9a1a-1a2b3c4d5e6f', 'To Kill a Mockingbird', 'Harper Lee'),
 ('c2b8f9f3-2d3b-5f4c-8b2b-2b3c4d5e6f7a', '1984', 'George Orwell'),
 ('d3c9g0g4-3e4c-6g5d-7c3c-3c4d5e6f7a8b', 'The Great Gatsby', 'F. Scott Fitzgerald'),
@@ -31,7 +31,6 @@ INSERT INTO books (BookID, title, author) VALUES:
 ('a0d6h7h1-0f1d-3h2e-0d0d-0f1a2b3c4d5e', 'Charlotte''s Web', 'E.B. White'),
 ('b1e7i8i2-1g2e-4i3f-9e1e-1a2b3c4d5e6f', 'Matilda', 'Roald Dahl'),
 ('c2f8j9j3-2h3f-5j4g-8f2f-2b3c4d5e6f7a', 'The Little Prince', 'Antoine de Saint-Exupéry'),
-('d3g9k0k4-3i4g-6k5h-7g3g-3c4d5e6f7a8b'),
 ('e4h0l1l5-4j5h-7l6i-6h4h-4d5e6f7a8b9c', 'Anne of Green Gables', 'L.M. Montgomery'),
 ('f5i1m2m6-5k6i-8m7j-5i5i-5e6f7a8b9c0d', 'Little Women', 'Louisa May Alcott'),
 ('a6j2n3n7-6l7j-9n8k-4j6j-6f7a8b9c0d1e', 'Frankenstein', 'Mary Shelley'),

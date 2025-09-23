@@ -110,4 +110,5 @@ dist/
 # PM2 ecosystem files
 ecosystem.config.js
 
-.db
+# Database files
+*.db
