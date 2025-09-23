@@ -1,7 +1,22 @@
 import express, { Request, Response } from "express";
+import sqlite3 from "sqlite3";
+import path from "path";
+
 
 const app = express();
 const port: number = 3000;
+
+const dbPath = path.join(process.cwd(), "Library.db");
+const db = new sqlite3.Database(dbPath);
+// Endpoint to view all books in the database
+app.get("/api/books", (req: Request, res: Response) => {
+  db.all("SELECT * FROM books", (err: Error | null, rows: any[]) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
 
 app.use(express.json());
 
