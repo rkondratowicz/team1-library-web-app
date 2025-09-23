@@ -6,6 +6,9 @@ import path from "path";
 const app = express();
 const port: number = 3000;
 
+app.use(express.json());
+
+
 const dbPath = path.join(process.cwd(), "Library.db");
 const db = new sqlite3.Database(dbPath);
 // Endpoint to view all books in the database
@@ -14,11 +17,21 @@ app.get("/api/books", (req: Request, res: Response) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+    res.json(rows[1]);
   });
 });
 
-app.use(express.json());
+app.get("/api/getBook/:title",(req:Request,res:Response)=>{
+  const title:string = req.params.title;
+  db.get('SELECT * FROM books WHERE title=?',[title],(err:Error|null,row:any)=>{
+    if(!row){
+      res.status(404).send('Book not found');
+      console.log('book not found');
+      return;
+    }
+    res.json({id:row.BookID,title:row.title,author:row.author});
+  });
+});
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello, World!" });
