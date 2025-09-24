@@ -1,13 +1,14 @@
 import express, { Request, Response } from "express";
 import sqlite3 from "sqlite3";
 import path from "path";
-
-
 const app = express();
 const port: number = 3000;
-
 app.use(express.json());
 
+app.set("view engine", "ejs");
+app.set("views", path.join(process.cwd(), "views"));
+
+app.use(express.static(path.join(process.cwd(),'public')))
 
 const dbPath = path.join(process.cwd(), "Library.db");
 const db = new sqlite3.Database(dbPath);
@@ -34,7 +35,7 @@ app.get("/api/getBook/:title",(req:Request,res:Response)=>{
 });
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Hello, World!" });
+  res.render("index", { title: "Library Home" });
 });
 
 interface GreetRequestBody {
