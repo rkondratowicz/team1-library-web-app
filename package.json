@@ -21,10 +21,14 @@
   "license": "ISC",
   "dependencies": {
     "@tailwindcss/cli": "^4.1.13",
+    "@types/cors": "^2.8.19",
+    "@types/morgan": "^1.9.10",
     "@types/sqlite3": "^3.1.11",
+    "cors": "^2.8.5",
     "daisyui": "^5.1.14",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "morgan": "^1.10.1",
     "sqlite3": "^5.1.7",
     "tailwindcss": "^4.1.13"
   },
