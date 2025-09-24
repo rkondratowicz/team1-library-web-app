@@ -10,7 +10,12 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "npx @tailwindcss/cli -i src/input.css -o public/output.css"
+    "build:css": "npx @tailwindcss/cli -i src/input.css -o public/output.css",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint . --write",
+    "format": "biome format . --write",
+    "check": "biome check .",
+    "check:fix": "biome check . --write"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +30,7 @@
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
     "@types/express": "^5.0.3",
     "@types/node": "^24.5.2",
     "nodemon": "^3.1.10",
