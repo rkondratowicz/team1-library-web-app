@@ -1,6 +1,6 @@
-import type { Book } from "../models/Book.js";
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
+import type { Book } from "../models/Book.js";
 
 export class BookRepository {
   private db: sqlite3.Database;

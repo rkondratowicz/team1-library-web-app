@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { greetHandler, greet2Handler } from "../controllers/GreetController.js";
+import { greet2Handler, greetHandler } from "../controllers/GreetController.js";
 
 export function createGreetRoutes(): Router {
   const router = Router();

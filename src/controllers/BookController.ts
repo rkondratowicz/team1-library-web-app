@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { BookService } from "../services/BookService.js";
+import type { BookService } from "../services/BookService.js";
 
 export class BookController {
   private bookService: BookService;
@@ -13,7 +13,9 @@ export class BookController {
       const books = await this.bookService.getAllBooks();
       res.json({ success: true, data: books, message: "Books retrieved successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Error retrieving books", errors: [String(error)] });
+      res
+        .status(500)
+        .json({ success: false, message: "Error retrieving books", errors: [String(error)] });
     }
   }
 
@@ -27,7 +29,9 @@ export class BookController {
       }
       res.json({ success: true, data: book, message: "Book retrieved successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Error retrieving book", errors: [String(error)] });
+      res
+        .status(500)
+        .json({ success: false, message: "Error retrieving book", errors: [String(error)] });
     }
   }
 }
