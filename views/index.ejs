@@ -6,9 +6,20 @@
     <link href="/output.css" rel="stylesheet">
 </head>
 <body>
-    <h1><%= title %></h1> 
-    <p>Welcome to your EJS page!</p>
-    <h2>This is my attempt at ssr without a framework</h2>
-    <button class="btn btn-primary">Button</button>
+    <h1><%= title %></h1>
+    <p>Welcome to the Book Library Web App!</p>
+    <nav class="flex flex-col items-center my-8">
+        <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+            <a href="/dashboard" class="bg-blue-600 text-white py-3 px-6 rounded-lg shadow hover:bg-blue-700 text-lg font-semibold text-center transition">Dashboard</a>
+            <a href="/books" class="bg-green-600 text-white py-3 px-6 rounded-lg shadow hover:bg-green-700 text-lg font-semibold text-center transition">Books</a>
+            <a href="/members" class="bg-purple-600 text-white py-3 px-6 rounded-lg shadow hover:bg-purple-700 text-lg font-semibold text-center transition">Members</a>
+            <a href="/borrowing" class="bg-yellow-500 text-white py-3 px-6 rounded-lg shadow hover:bg-yellow-600 text-lg font-semibold text-center transition">Borrowing</a>
+            <a href="/reports" class="bg-red-600 text-white py-3 px-6 rounded-lg shadow hover:bg-red-700 text-lg font-semibold text-center transition">Reports</a>
+        </div>
+    </nav>
+    <section>
+        <h2>About</h2>
+        <p>This web-based library management system helps librarians manage books, members, borrowing, and reporting efficiently.</p>
+    </section>
 </body>
 </html>
