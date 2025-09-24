@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+
+</head>
+<body>
+    <header>
+        <h1>Library Books</h1>
+    </header>
+    <main>
+        <!-- Book list will be rendered here -->
+        <ul class="list">
+            <% if (books && books.length) { %>
+                <% books.forEach(function(book) { %>
+                    <li class="list-row"><%= book.title %> by <%= book.author %></li>
+                <% }); %>
+            <% } else { %>
+                <li class="list-row">No books available.</li>
+            <% } %>
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; <%= new Date().getFullYear() %> Team 1 Library</p>
+    </footer>
+</body>
+</html>

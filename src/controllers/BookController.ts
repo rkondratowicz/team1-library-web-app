@@ -11,7 +11,8 @@ export class BookController {
   async getAllBooks(req: Request, res: Response): Promise<void> {
     try {
       const books = await this.bookService.getAllBooks();
-      res.json({ success: true, data: books, message: "Books retrieved successfully" });
+      //res.json({ success: true, data: books, message: "Books retrieved successfully" });
+      res.render("books",{books:books});
     } catch (error) {
       res
         .status(500)
