@@ -167,9 +167,11 @@
     </div>
 
     <!-- Add Book Modal -->
-    <div id="addBookModal" class="modal">
+    <dialog id="addBookModal" class="modal">
         <div class="modal-box w-11/12 max-w-2xl">
-            <button id="closeAddBookModal" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
             <h2 class="font-bold text-2xl mb-6">
                 <i class="fas fa-plus-circle text-primary mr-2"></i>
                 Add New Book
@@ -243,18 +245,20 @@
                 </div>
 
                 <div class="modal-action">
-                    <button type="button" id="closeAddBookModalBtn" class="btn btn-ghost">Cancel</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('addBookModal').close()">Cancel</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save mr-2"></i>Add Book
                     </button>
                 </div>
             </form>
         </div>
-    </div>
+    </dialog>
     <!-- Edit Book Modal -->
-    <div id="editBookModal" class="modal">
+    <dialog id="editBookModal" class="modal">
         <div class="modal-box w-11/12 max-w-2xl">
-            <button id="closeEditBookModal" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
             <h2 class="font-bold text-2xl mb-6">
                 <i class="fas fa-edit text-primary mr-2"></i>
                 Edit Book
@@ -315,14 +319,55 @@
                 </div>
 
                 <div class="modal-action">
-                    <button type="button" id="closeEditBookModalBtn" class="btn btn-ghost">Cancel</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('editBookModal').close()">Cancel</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save mr-2"></i>Save Changes
                     </button>
                 </div>
             </form>
         </div>
-    </div>
+    </dialog>
+
+    <!-- Delete Confirmation Modal -->
+    <dialog id="deleteBookModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg text-error">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Delete Book
+            </h3>
+            <div class="py-4">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="avatar">
+                        <div class="w-12 h-12 rounded-lg bg-error/10 flex items-center justify-center">
+                            <i class="fas fa-book text-error text-xl"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-base-content" id="deleteBookTitle">Book Title</p>
+                        <p class="text-base-content/70" id="deleteBookAuthor">by Author Name</p>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h4 class="font-bold">Warning!</h4>
+                        <p>This action cannot be undone. The book will be permanently removed from your library.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('deleteBookModal').close()">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-error">
+                    <i class="fas fa-trash mr-2"></i>Delete Book
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 
     <script>
         // Global variables
@@ -342,7 +387,11 @@
         // Modal elements
         const addBookModal = document.getElementById('addBookModal');
         const editBookModal = document.getElementById('editBookModal');
+        const deleteBookModal = document.getElementById('deleteBookModal');
         const openAddBookModalBtn = document.getElementById('openAddBookModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteBookTitle = document.getElementById('deleteBookTitle');
+        const deleteBookAuthor = document.getElementById('deleteBookAuthor');
         const closeAddBookModalBtns = document.querySelectorAll('#closeAddBookModal, #closeAddBookModalBtn');
         const closeEditBookModalBtns = document.querySelectorAll('#closeEditBookModal, #closeEditBookModalBtn');
         const generateISBNBtn = document.getElementById('generateISBN');
@@ -374,6 +423,30 @@
 
             // Generate ISBN
             generateISBNBtn.addEventListener('click', generateRandomISBN);
+
+            // Delete confirmation
+            confirmDeleteBtn.addEventListener('click', confirmDelete);
+
+            // Event delegation for dynamically created buttons
+            document.body.addEventListener('click', function(e) {
+                // Handle delete button clicks
+                if (e.target.closest('.delete-book-btn')) {
+                    console.log('Delete button clicked');
+                    e.preventDefault();
+                    const btn = e.target.closest('.delete-book-btn');
+                    const isbn = btn.getAttribute('data-isbn');
+                    console.log('ISBN to delete:', isbn);
+                    deleteBook(isbn);
+                }
+                
+                // Handle edit button clicks
+                if (e.target.closest('.edit-book-btn')) {
+                    e.preventDefault();
+                    const btn = e.target.closest('.edit-book-btn');
+                    const isbn = btn.getAttribute('data-isbn');
+                    editBook(isbn);
+                }
+            });
         }
 
         async function loadBooks() {
@@ -437,8 +510,8 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </div>
                                 <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
-                                    <li><a onclick="editBook('${book.ISBN}')" class="text-info"><i class="fas fa-edit mr-2"></i>Edit</a></li>
-                                    <li><a onclick="deleteBook('${book.BookID}')" class="text-error"><i class="fas fa-trash mr-2"></i>Delete</a></li>
+                                    <li><a class="text-info edit-book-btn" data-isbn="${book.ISBN}"><i class="fas fa-edit mr-2"></i>Edit</a></li>
+                                    <li><a class="text-error delete-book-btn" data-isbn="${book.ISBN}"><i class="fas fa-trash mr-2"></i>Delete</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -452,10 +525,10 @@
                                 ISBN: ${book.ISBN}
                             </div>
                             <div class="btn-group">
-                                <button onclick="editBook('${book.ISBN}')" class="btn btn-info btn-sm">
+                                <button class="btn btn-info btn-sm edit-book-btn" data-isbn="${book.ISBN}">
                                     <i class="fas fa-edit mr-1"></i>Edit
                                 </button>
-                                <button onclick="deleteBook('${book.BookID}')" class="btn btn-error btn-sm">
+                                <button class="btn btn-error btn-sm delete-book-btn" data-isbn="${book.ISBN}">
                                     <i class="fas fa-trash mr-1"></i>Delete
                                 </button>
                             </div>
@@ -480,10 +553,10 @@
                     <td class="max-w-xs truncate">${description}</td>
                     <td>
                         <div class="btn-group">
-                            <button onclick="editBook('${book.ISBN}')" class="btn btn-info btn-xs">
+                            <button class="btn btn-info btn-xs edit-book-btn" data-isbn="${book.ISBN}">
                                 <i class="fas fa-edit mr-1"></i>Edit
                             </button>
-                            <button onclick="deleteBook('${book.BookID}')" class="btn btn-error btn-xs">
+                            <button class="btn btn-error btn-xs delete-book-btn" data-isbn="${book.ISBN}">
                                 <i class="fas fa-trash mr-1"></i>Delete
                             </button>
                         </div>
@@ -599,15 +672,53 @@
             }
         }
 
-        function deleteBook(bookId) {
-            const book = allBooks.find(b => b.BookID == bookId);
-            if (book && confirm(`Are you sure you want to delete "${book.Title}" by ${book.Author}?`)) {
+        function deleteBook(isbn) {
+            console.log('deleteBook called with ISBN:', isbn);
+            console.log('allBooks:', allBooks);
+            
+            const book = allBooks.find(b => b.ISBN == isbn);
+            console.log('Found book:', book);
+            
+            if (!book) {
+                console.error('Book not found with ISBN:', isbn);
+                return;
+            }
+
+            // Populate modal with book details
+            deleteBookTitle.textContent = book.Title;
+            deleteBookAuthor.textContent = `by ${book.Author}`;
+            
+            // Store the ISBN for later use
+            confirmDeleteBtn.setAttribute('data-isbn', isbn);
+            
+            // Show the custom delete modal
+            deleteBookModal.showModal();
+        }
+
+        function confirmDelete() {
+            const isbn = confirmDeleteBtn.getAttribute('data-isbn');
+            const book = allBooks.find(b => b.ISBN == isbn);
+            
+            if (book) {
+                console.log('User confirmed deletion, creating form...');
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/books/delete/${bookId}`;
+                form.action = '/api/books/delete';
+                
+                // Create hidden input for ISBN
+                const isbnInput = document.createElement('input');
+                isbnInput.type = 'hidden';
+                isbnInput.name = 'ISBN';
+                isbnInput.value = book.ISBN;
+                form.appendChild(isbnInput);
+                
                 document.body.appendChild(form);
+                console.log('Submitting form...');
                 form.submit();
             }
+            
+            // Close the modal
+            deleteBookModal.close();
         }
 
         // Utility function for debouncing
@@ -622,18 +733,6 @@
                 timeout = setTimeout(later, wait);
             };
         }
-
-        // Load books data for display
-        <% if (typeof books !== 'undefined' && books && books.length > 0) { %>
-            allBooks = <%- JSON.stringify(books) %>;
-            filteredBooks = [...allBooks];
-            
-            // Initialize display after DOM is loaded
-            document.addEventListener('DOMContentLoaded', function() {
-                updateDisplay();
-                updateStats();
-            });
-        <% } %>
     </script>
 </body>
 </html>
