@@ -1,5 +1,5 @@
 import type { CreateMemberRequest, Member } from "../models/member.js";
-import { MemberRepository } from "../repositories/MemberRepository.js";
+import { MemberRepository } from "../repositories/memberRepository.js";
 
 export class MemberService {
   private memberRepository: MemberRepository;

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { CreateMemberRequest } from "../models/member.js";
-import { MemberService } from "../services/MemberService.js";
+import { MemberService } from "../services/memberService.js";
 
 export class MemberController {
   private memberService: MemberService;

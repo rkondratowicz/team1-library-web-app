@@ -1,15 +1,15 @@
 import path from "node:path";
 import express from "express";
 import { BookController } from "./controllers/BookController.js";
-import { MemberController } from "./controllers/MemberController.js";
+import { MemberController } from "./controllers/memberController.js";
 import { setupMiddleware } from "./middleware/index.js";
 import { BookRepository } from "./repositories/BookRepository.js";
-import { MemberRepository } from "./repositories/MemberRepository.js";
+import { MemberRepository } from "./repositories/memberRepository.js";
 import { createBookRoutes } from "./routes/BookRoutes.js";
 import { createGreetRoutes } from "./routes/GreetRoutes.js";
-import { createMemberRoutes } from "./routes/MemberRoutes.js";
+import { createMemberRoutes } from "./routes/memberRoutes.js";
 import { BookService } from "./services/BookService.js";
-import { MemberService } from "./services/MemberService.js";
+import { MemberService } from "./services/memberService.js";
 
 const app = express();
 const port = 3000;
