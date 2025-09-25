@@ -30,4 +30,18 @@ export class BookRepository {
       );
     });
   }
+
+  create(book: Book): Promise<Book> {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT INTO books (ISBN, Author, Title, publicationYear, description)
+         VALUES (?, ?, ?, ?, ?)`,
+        [book.ISBN, book.author, book.title, book.publicationYear, book.description],
+        (err: unknown) => {
+          if (err) return reject(err);
+          resolve(book);
+        }
+      );
+    });
+  }
 }

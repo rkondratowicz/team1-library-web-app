@@ -12,8 +12,10 @@ import { BookService } from "./services/BookService.js";
 import { MemberService } from "./services/memberService.js";
 
 const app = express();
+
 const port = 3000;
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 setupMiddleware(app);
 

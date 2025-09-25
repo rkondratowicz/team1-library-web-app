@@ -15,4 +15,8 @@ export class BookService {
   async getBookByTitle(title: string): Promise<Book | undefined> {
     return await this.bookRepository.findByTitle(title);
   }
+
+  async addBook(book: Book): Promise<Book> {
+    return await this.bookRepository.create(book);
+  }
 }

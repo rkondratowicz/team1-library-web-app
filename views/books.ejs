@@ -9,10 +9,52 @@
 </head>
 <body>
     <header>
-            <h1 class="text-3xl font-bold text-center my-6">Library Books</h1>
-            <div class="flex justify-center mb-6">
-                <a href="/books/add" class="btn btn-primary">Add Book</a>
+        <h1 class="text-3xl font-bold text-center my-6">Library Books</h1>
+        <div class="flex justify-center mb-6">
+            <button id="openAddBookModal" class="btn btn-primary">Add Book</button>
+        </div>
+        <!-- Add Book Modal -->
+        <div id="addBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
+                <button id="closeAddBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                <h2 class="text-xl font-semibold mb-4">Add New Book</h2>
+                <% if (typeof errors !== 'undefined' && errors.length) { %>
+                    <div class="mb-4 text-red-600">
+                        <ul>
+                            <% errors.forEach(function(error) { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+                <form action="/api/books" method="POST">
+                    <div class="mb-4">
+                        <label for="title" class="block mb-1">Title:</label>
+                        <input type="text" id="title" name="title" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="author" class="block mb-1">Author:</label>
+                        <input type="text" id="author" name="author" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="ISBN" class="block mb-1">ISBN:</label>
+                        <div class="flex">
+                            <input type="text" id="ISBN" name="ISBN" class="input input-bordered w-full" required>
+                            <button type="button" id="generateISBN" class="btn btn-secondary ml-2">Generate</button>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="publicationYear" class="block mb-1">Year:</label>
+                        <input type="number" id="publicationYear" name="publicationYear" class="input input-bordered w-full" min="0" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="block mb-1">Description:</label>
+                        <textarea id="description" name="description" class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Add Book</button>
+                </form>
             </div>
+        </div>
     </header>
     <main>
             <% if (books && books.length) { %>
@@ -52,5 +94,35 @@
     <footer>
         <p>&copy; <%= new Date().getFullYear() %> Team 1 Library</p>
     </footer>
+    <script>
+        const openModalBtn = document.getElementById('openAddBookModal');
+        const closeModalBtn = document.getElementById('closeAddBookModal');
+        const modal = document.getElementById('addBookModal');
+        const generateISBNBtn = document.getElementById('generateISBN');
+        const isbnInput = document.getElementById('ISBN');
+        if (openModalBtn && closeModalBtn && modal) {
+            openModalBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+        if (generateISBNBtn && isbnInput) {
+            generateISBNBtn.addEventListener('click', () => {
+                // Generate a random 13-digit ISBN (not strictly valid, but for demo purposes)
+                let isbn = '';
+                for (let i = 0; i < 13; i++) {
+                    isbn += Math.floor(Math.random() * 10);
+                }
+                isbnInput.value = isbn;
+            });
+        }
+    </script>
 </body>
 </html>

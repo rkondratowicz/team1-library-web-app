@@ -4,7 +4,8 @@
 - No changes recorded yet.
 
 ## Next Steps
-- Record the next planned book feature task here.
+
+- 02_backend_api_edit_books.md
 
 ---
 

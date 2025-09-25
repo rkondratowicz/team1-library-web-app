@@ -8,6 +8,7 @@ Please enter the feature name (e.g., "books", "members", "search", etc.).
 
 ### Progress
 The system will read the progress file related to the feature you enter (e.g., `books_progress.md` for "books").
+It will identify the next task to be executed based on the "Next Steps" section of that file.
 
 ---
 
