@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import type { Book } from "../models/Book.js";
-import type { BookService } from "../services/BookService.js";
+import { BookService } from "../services/BookService.js";
 
 export class BookController {
   private bookService: BookService;
 
-  constructor(bookService: BookService) {
-    this.bookService = bookService;
+  constructor() {
+    this.bookService = new BookService();
   }
 
   async addBook(req: Request, res: Response): Promise<void> {

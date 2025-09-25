@@ -1,11 +1,11 @@
 import type { Book } from "../models/Book.js";
-import type { BookRepository } from "../repositories/BookRepository.js";
+import { BookRepository } from "../repositories/BookRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;
 
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
+  constructor() {
+    this.bookRepository = new BookRepository();
   }
 
   async getAllBooks(): Promise<Book[]> {
@@ -16,11 +16,17 @@ export class BookService {
     return await this.bookRepository.findByTitle(title);
   }
 
-  async searchBooks(searchTerm: string): Promise<Book[]> {
-    if (!searchTerm || searchTerm.trim().length === 0) {
-      return await this.bookRepository.findAll();
+  async bookAvailable(bookTitle: string): Promise<boolean> {
+    const book = await this.bookRepository.findByTitle(bookTitle);
+    let status: boolean = false;
+    if (book?.available !== undefined) {
+      if (book.available > 0) {
+        status = true;
+      } else {
+        status = false;
+      }
     }
-    return await this.bookRepository.searchBooks(searchTerm.trim());
+    return status;
   }
 
   async addBook(book: Book): Promise<Book> {
@@ -29,6 +35,10 @@ export class BookService {
 
   async editBook(book: Book): Promise<void> {
     await this.bookRepository.update(book);
+  }
+
+  async searchBooks(searchTerm: string): Promise<Book[]> {
+    return await this.bookRepository.searchBooks(searchTerm);
   }
 
   async deleteBook(isbn: string): Promise<void> {

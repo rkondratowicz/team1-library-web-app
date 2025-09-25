@@ -4,12 +4,10 @@ import { BookController } from "./controllers/BookController.js";
 import { MemberController } from "./controllers/memberController.js";
 import { setupMiddleware } from "./middleware/index.js";
 import { BookRepository } from "./repositories/BookRepository.js";
-import { MemberRepository } from "./repositories/memberRepository.js";
 import { createBookRoutes } from "./routes/BookRoutes.js";
 import { createGreetRoutes } from "./routes/GreetRoutes.js";
 import { createMemberRoutes } from "./routes/memberRoutes.js";
 import { BookService } from "./services/BookService.js";
-import { MemberService } from "./services/memberService.js";
 
 const app = express();
 
@@ -23,12 +21,12 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.use(express.static(path.join(process.cwd(), "public")));
 
-const bookRepository = new BookRepository();
-const bookService = new BookService(bookRepository);
-const bookController = new BookController(bookService);
+const _bookRepository = new BookRepository();
+const bookService = new BookService();
+const bookController = new BookController();
 
-const _memberRepository = new MemberRepository();
-const _memberService = new MemberService();
+// const _memberRepository = new MemberRepository();
+// const _memberService = new MemberService();
 const memberController = new MemberController();
 
 app.use("/api", createBookRoutes(bookController));
