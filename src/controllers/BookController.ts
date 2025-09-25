@@ -115,7 +115,7 @@ export class BookController {
       });
       const books = await this.bookService.getAllBooks();
       res.render("books", { books });
-    } catch (error: unknown) {
+    } catch (_serror: unknown) {
       const books = await this.bookService.getAllBooks();
       res.status(500).render("books", { books, errors: ["Error editing book"] });
     }
