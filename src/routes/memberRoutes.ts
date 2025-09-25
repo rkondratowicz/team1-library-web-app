@@ -24,7 +24,9 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // PUT /api/members/:id
   router.put("/members/:id", (req, res) => memberController.updateMember(req, res));
 
-  router.post("/members/:id/rental/:bookTitle",(req,res)=>{memberController.rentBook(req,res)});
+  router.post("/members/:id/rental/:bookTitle", (req, res) => {
+    memberController.rentBook(req, res);
+  });
 
   // Delete member by ID
   // DELETE /api/members/:id

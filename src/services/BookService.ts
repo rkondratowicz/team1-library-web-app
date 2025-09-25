@@ -1,5 +1,5 @@
 import type { Book } from "../models/Book.js";
-import  { BookRepository } from "../repositories/BookRepository.js";
+import { BookRepository } from "../repositories/BookRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;
@@ -18,14 +18,13 @@ export class BookService {
 
   async bookAvailable(bookTitle: string): Promise<boolean> {
     const book = await this.bookRepository.findByTitle(bookTitle);
-    let status:boolean=false;
-    if(book?.available!=undefined){
-        if(book.available>0){
-            status= true;
-        }
-        else{
-          status= false;
-        }
+    let status: boolean = false;
+    if (book?.available !== undefined) {
+      if (book.available > 0) {
+        status = true;
+      } else {
+        status = false;
+      }
     }
     return status;
   }

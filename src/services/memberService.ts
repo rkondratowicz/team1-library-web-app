@@ -28,26 +28,25 @@ export class MemberService {
     return await this.memberRepository.search(trimmedQuery);
   }
 
-  async rentBook(memberID:number,bookID:number):Promise<{success:boolean,message:string}>{
-    if(!memberID||memberID<=0){
-        return {success:false,message:"Invalid member ID"};
+  async rentBook(memberID: number, bookID: number): Promise<{ success: boolean; message: string }> {
+    if (!memberID || memberID <= 0) {
+      return { success: false, message: "Invalid member ID" };
     }
-    if(!bookID||bookID<=0){
-        return {success:false,message:"Invalid book ID"};
+    if (!bookID || bookID <= 0) {
+      return { success: false, message: "Invalid book ID" };
     }
     const member = await this.memberRepository.findById(memberID);
-    if(!member){
-        return {success:false,message:"Member not found"};
+    if (!member) {
+      return { success: false, message: "Member not found" };
     }
-    try{
-        await this.memberRepository.rentBook(memberID,bookID);
-        return {success:true,message:"Book rented successfully"};
-    }catch(err:Error|unknown){
-        console.error("Error in rentBook service:",err);
-        return {success:false,message:"Error renting book"};
+    try {
+      await this.memberRepository.rentBook(memberID, bookID);
+      return { success: true, message: "Book rented successfully" };
+    } catch (err: unknown) {
+      console.error("Error in rentBook service:", err);
+      return { success: false, message: "Error renting book" };
     }
   }
-
 
   async createMember(memberData: CreateMemberRequest): Promise<Member> {
     // Validate required fields
