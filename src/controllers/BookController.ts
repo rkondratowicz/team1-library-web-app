@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { Book } from "../models/Book.js";
 import type { BookService } from "../services/BookService.js";
 
 export class BookController {
@@ -30,7 +31,7 @@ export class BookController {
         Author,
         ISBN,
         PublicationYear: Number(PublicationYear),
-        Description: Description || "",
+        Description: Description || ""
       });
       // After successful add, re-fetch books and render
       const books = await this.bookService.getAllBooks();
@@ -53,8 +54,17 @@ export class BookController {
   async getAllBooks(_req: Request, res: Response): Promise<void> {
     try {
       const books = await this.bookService.getAllBooks();
-      //res.json({ success: true, data: books, message: "Books retrieved successfully" });
       res.render("books", { books: books });
+    } catch (_error) {
+      const books: Book[] = [];
+      res.status(500).render("books", { books, errors: ["Error retrieving books"] });
+    }
+  }
+
+  async getAllBooksApi(_req: Request, res: Response): Promise<void> {
+    try {
+      const books = await this.bookService.getAllBooks();
+      res.json(books);
     } catch (error) {
       res
         .status(500)
@@ -110,4 +120,21 @@ export class BookController {
         res.status(500).render("books", { books, errors: ["Error editing book"] });
       }
     }
+
+  async searchBooks(req: Request, res: Response): Promise<void> {
+    try {
+      const searchTerm = req.query.q as string;
+      if (!searchTerm) {
+        res.status(400).json({ success: false, message: "Search term is required" });
+        return;
+      }
+
+      const books = await this.bookService.searchBooks(searchTerm);
+      res.json(books);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ success: false, message: "Error searching books", errors: [String(error)] });
+    }
+  }
 }

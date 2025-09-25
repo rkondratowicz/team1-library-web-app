@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-base-100 min-h-screen">
+    <!-- Navigation -->
+    <div class="navbar bg-primary text-primary-content shadow-lg">
+        <div class="flex-1">
+            <a href="/" class="btn btn-ghost text-xl">
+                <i class="fas fa-book mr-2"></i>
+                Library Management
+            </a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/books" class="text-primary-content">📚 Books</a></li>
+                <li><a href="/members" class="text-primary-content">👥 Members</a></li>
+                <li><a href="/borrowing" class="text-primary-content font-bold">📖 Borrowing</a></li>
+                <li><a href="/" class="text-primary-content">🏠 Home</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <div class="flex flex-col lg:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-base-content flex items-center gap-2">
+                    <i class="fas fa-handshake text-primary"></i>
+                    Book Borrowing Management
+                </h1>
+                <p class="text-base-content/70 mt-1">Allow members to borrow books from the library</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Member Selection Section -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl flex items-center gap-2">
+                        <i class="fas fa-user-search text-info"></i>
+                        Select Member
+                    </h2>
+                    
+                    <!-- Member Search -->
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-medium">Search Member</span>
+                        </label>
+                        <div class="join">
+                            <input 
+                                type="text" 
+                                id="member-search" 
+                                placeholder="Enter member name or email..." 
+                                class="input input-bordered join-item flex-grow"
+                                autocomplete="off"
+                            />
+                            <button 
+                                type="button" 
+                                id="search-member-btn" 
+                                class="btn btn-info join-item"
+                            >
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Member Results -->
+                    <div id="member-results" class="hidden">
+                        <label class="label">
+                            <span class="label-text font-medium">Select a Member:</span>
+                        </label>
+                        <div id="member-list" class="space-y-2 max-h-64 overflow-y-auto">
+                            <!-- Dynamic member list will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Member Display -->
+                    <div id="selected-member" class="hidden">
+                        <div class="divider">Selected Member</div>
+                        <div class="card bg-base-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-primary text-primary-content rounded-full w-12 h-12">
+                                            <span class="text-xl" id="member-initials">?</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <h3 class="font-semibold text-lg" id="member-name">Member Name</h3>
+                                        <p class="text-sm opacity-75" id="member-email">email@example.com</p>
+                                        <div class="grid grid-cols-2 gap-2 text-xs mt-2">
+                                            <div>
+                                                <span class="font-medium">Phone:</span>
+                                                <span id="member-phone">N/A</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">City:</span>
+                                                <span id="member-city">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        id="clear-member" 
+                                        class="btn btn-ghost btn-sm btn-circle"
+                                        title="Clear selection"
+                                    >
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <!-- Current Rentals Display -->
+                                <div class="mt-3">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-book-open text-warning"></i>
+                                        <span class="font-medium text-sm">Current Rentals:</span>
+                                        <span id="rental-count" class="badge badge-warning">0</span>
+                                    </div>
+                                    <div id="current-rentals" class="text-sm text-base-content/70">
+                                        No current rentals
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book Selection Section -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl flex items-center gap-2">
+                        <i class="fas fa-book-reader text-success"></i>
+                        Select Book
+                    </h2>
+                    
+                    <!-- Book Search -->
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-medium">Search Book</span>
+                        </label>
+                        <div class="join">
+                            <input 
+                                type="text" 
+                                id="book-search" 
+                                placeholder="Enter book title, author, or ISBN..." 
+                                class="input input-bordered join-item flex-grow"
+                                autocomplete="off"
+                            />
+                            <button 
+                                type="button" 
+                                id="search-book-btn" 
+                                class="btn btn-success join-item"
+                            >
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Book Results -->
+                    <div id="book-results" class="hidden">
+                        <label class="label">
+                            <span class="label-text font-medium">Select a Book:</span>
+                        </label>
+                        <div id="book-list" class="space-y-2 max-h-64 overflow-y-auto">
+                            <!-- Dynamic book list will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Book Display -->
+                    <div id="selected-book" class="hidden">
+                        <div class="divider">Selected Book</div>
+                        <div class="card bg-base-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-16 h-20 bg-gradient-to-b from-primary to-primary-focus rounded flex items-center justify-center text-primary-content">
+                                        <i class="fas fa-book text-2xl"></i>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <h3 class="font-semibold text-lg" id="book-title">Book Title</h3>
+                                        <p class="text-sm opacity-75 mb-2" id="book-author">Author Name</p>
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div>
+                                                <span class="font-medium">ISBN:</span>
+                                                <span id="book-isbn">N/A</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">Year:</span>
+                                                <span id="book-year">N/A</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <span class="font-medium text-xs">Description:</span>
+                                            <p class="text-xs text-base-content/70 mt-1" id="book-description">No description available</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        id="clear-book" 
+                                        class="btn btn-ghost btn-sm btn-circle"
+                                        title="Clear selection"
+                                    >
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Borrowing Action Section -->
+        <div class="mt-6">
+            <div class="card bg-accent/10 border-accent/20 border shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl flex items-center gap-2">
+                        <i class="fas fa-exchange-alt text-accent"></i>
+                        Complete Borrowing Transaction
+                    </h2>
+                    
+                    <!-- Validation Messages -->
+                    <div id="validation-messages" class="hidden">
+                        <!-- Dynamic validation messages will appear here -->
+                    </div>
+
+                    <!-- Transaction Summary -->
+                    <div id="transaction-summary" class="hidden">
+                        <div class="bg-base-100 rounded-lg p-4 border">
+                            <h3 class="font-semibold mb-3 flex items-center gap-2">
+                                <i class="fas fa-clipboard-check text-info"></i>
+                                Transaction Summary
+                            </h3>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <span class="font-medium">Member:</span>
+                                    <span id="summary-member">Not selected</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Book:</span>
+                                    <span id="summary-book">Not selected</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Rental Date:</span>
+                                    <span id="summary-date">Today</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium">Due Date:</span>
+                                    <span id="summary-due">14 days from today</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card-actions justify-end mt-4">
+                        <button 
+                            type="button" 
+                            id="clear-all-btn" 
+                            class="btn btn-outline btn-warning"
+                        >
+                            <i class="fas fa-broom mr-2"></i>
+                            Clear All
+                        </button>
+                        <button 
+                            type="button" 
+                            id="process-borrowing-btn" 
+                            class="btn btn-primary"
+                            disabled
+                        >
+                            <i class="fas fa-handshake mr-2"></i>
+                            Process Borrowing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg text-success flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                Borrowing Successful!
+            </h3>
+            <p class="py-4">The book has been successfully borrowed by the member.</p>
+            <div class="modal-action">
+                <button type="button" class="btn btn-primary" onclick="closeSuccessModal()">
+                    Process Another Borrowing
+                </button>
+                <a href="/borrowing" class="btn btn-ghost">Close</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg text-error flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                Error
+            </h3>
+            <p class="py-4" id="error-message">An error occurred while processing the borrowing.</p>
+            <div class="modal-action">
+                <button type="button" class="btn btn-error" onclick="closeErrorModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let selectedMember = null;
+        let selectedBook = null;
+
+        // DOM Elements
+        const memberSearch = document.getElementById('member-search');
+        const searchMemberBtn = document.getElementById('search-member-btn');
+        const memberResults = document.getElementById('member-results');
+        const memberList = document.getElementById('member-list');
+        const selectedMemberDiv = document.getElementById('selected-member');
+        const clearMemberBtn = document.getElementById('clear-member');
+
+        const bookSearch = document.getElementById('book-search');
+        const searchBookBtn = document.getElementById('search-book-btn');
+        const bookResults = document.getElementById('book-results');
+        const bookList = document.getElementById('book-list');
+        const selectedBookDiv = document.getElementById('selected-book');
+        const clearBookBtn = document.getElementById('clear-book');
+
+        const validationMessages = document.getElementById('validation-messages');
+        const transactionSummary = document.getElementById('transaction-summary');
+        const processBorrowingBtn = document.getElementById('process-borrowing-btn');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+
+        // Event Listeners
+        memberSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchMembers();
+            }
+        });
+
+        searchMemberBtn.addEventListener('click', searchMembers);
+        clearMemberBtn.addEventListener('click', clearMemberSelection);
+
+        bookSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchBooks();
+            }
+        });
+
+        searchBookBtn.addEventListener('click', searchBooks);
+        clearBookBtn.addEventListener('click', clearBookSelection);
+
+        processBorrowingBtn.addEventListener('click', processBorrowing);
+        clearAllBtn.addEventListener('click', clearAll);
+
+        // Member search functionality
+        async function searchMembers() {
+            const query = memberSearch.value.trim();
+            if (!query) {
+                showAlert('Please enter a search term', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/members/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error('Failed to search members');
+                }
+
+                const data = await response.json();
+                const members = data.success ? data.data : [];
+                displayMemberResults(members);
+            } catch (error) {
+                console.error('Error searching members:', error);
+                showAlert('Error searching members. Please try again.', 'error');
+            }
+        }
+
+        function displayMemberResults(members) {
+            memberList.innerHTML = '';
+            
+            if (members.length === 0) {
+                memberList.innerHTML = '<div class="text-center py-4 text-base-content/50">No members found</div>';
+            } else {
+                members.forEach(member => {
+                    const memberCard = createMemberCard(member);
+                    memberList.appendChild(memberCard);
+                });
+            }
+
+            memberResults.classList.remove('hidden');
+        }
+
+        function createMemberCard(member) {
+            const div = document.createElement('div');
+            div.className = 'card bg-base-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-base-300';
+            div.innerHTML = `
+                <div class="card-body p-3">
+                    <div class="flex items-center gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-info text-info-content rounded-full w-8 h-8">
+                                <span class="text-xs">${member.Fname.charAt(0)}${member.Sname.charAt(0)}</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="font-medium">${member.Fname} ${member.Sname}</div>
+                            <div class="text-sm opacity-75">${member.email}</div>
+                        </div>
+                        <button class="btn btn-primary btn-xs">Select</button>
+                    </div>
+                </div>
+            `;
+
+            div.addEventListener('click', () => selectMember(member));
+            return div;
+        }
+
+        function selectMember(member) {
+            selectedMember = member;
+            
+            // Update UI
+            document.getElementById('member-initials').textContent = member.Fname.charAt(0) + member.Sname.charAt(0);
+            document.getElementById('member-name').textContent = `${member.Fname} ${member.Sname}`;
+            document.getElementById('member-email').textContent = member.email;
+            document.getElementById('member-phone').textContent = member.phone || 'N/A';
+            document.getElementById('member-city').textContent = member.city || 'N/A';
+
+            // Show selected member section
+            selectedMemberDiv.classList.remove('hidden');
+            memberResults.classList.add('hidden');
+            memberSearch.value = '';
+
+            // Check current rentals (placeholder for now)
+            checkMemberRentals(member.id);
+
+            updateTransactionSummary();
+            validateTransaction();
+        }
+
+        function clearMemberSelection() {
+            selectedMember = null;
+            selectedMemberDiv.classList.add('hidden');
+            memberResults.classList.add('hidden');
+            memberSearch.value = '';
+            
+            updateTransactionSummary();
+            validateTransaction();
+        }
+
+        // Book search functionality
+        async function searchBooks() {
+            const query = bookSearch.value.trim();
+            if (!query) {
+                showAlert('Please enter a search term', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error('Failed to search books');
+                }
+
+                const books = await response.json();
+                displayBookResults(books);
+            } catch (error) {
+                console.error('Error searching books:', error);
+                showAlert('Error searching books. Please try again.', 'error');
+            }
+        }
+
+        function displayBookResults(books) {
+            bookList.innerHTML = '';
+            
+            if (books.length === 0) {
+                bookList.innerHTML = '<div class="text-center py-4 text-base-content/50">No books found</div>';
+            } else {
+                books.forEach(book => {
+                    const bookCard = createBookCard(book);
+                    bookList.appendChild(bookCard);
+                });
+            }
+
+            bookResults.classList.remove('hidden');
+        }
+
+        function createBookCard(book) {
+            const div = document.createElement('div');
+            div.className = 'card bg-base-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-base-300';
+            div.innerHTML = `
+                <div class="card-body p-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-16 bg-gradient-to-b from-success to-success-focus rounded flex items-center justify-center text-success-content">
+                            <i class="fas fa-book text-sm"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="font-medium">${book.Title}</div>
+                            <div class="text-sm opacity-75">${book.Author}</div>
+                            <div class="text-xs">ISBN: ${book.ISBN} | ${book.PublicationYear}</div>
+                        </div>
+                        <button class="btn btn-success btn-xs">Select</button>
+                    </div>
+                </div>
+            `;
+
+            div.addEventListener('click', () => selectBook(book));
+            return div;
+        }
+
+        function selectBook(book) {
+            selectedBook = book;
+            
+            // Update UI
+            document.getElementById('book-title').textContent = book.Title;
+            document.getElementById('book-author').textContent = book.Author;
+            document.getElementById('book-isbn').textContent = book.ISBN;
+            document.getElementById('book-year').textContent = book.PublicationYear;
+            document.getElementById('book-description').textContent = book.Description || 'No description available';
+
+            // Show selected book section
+            selectedBookDiv.classList.remove('hidden');
+            bookResults.classList.add('hidden');
+            bookSearch.value = '';
+
+            updateTransactionSummary();
+            validateTransaction();
+        }
+
+        function clearBookSelection() {
+            selectedBook = null;
+            selectedBookDiv.classList.add('hidden');
+            bookResults.classList.add('hidden');
+            bookSearch.value = '';
+            
+            updateTransactionSummary();
+            validateTransaction();
+        }
+
+        // Transaction management
+        function updateTransactionSummary() {
+            if (selectedMember || selectedBook) {
+                document.getElementById('summary-member').textContent = 
+                    selectedMember ? `${selectedMember.Fname} ${selectedMember.Sname}` : 'Not selected';
+                document.getElementById('summary-book').textContent = 
+                    selectedBook ? selectedBook.Title : 'Not selected';
+                
+                const today = new Date();
+                const dueDate = new Date(today);
+                dueDate.setDate(today.getDate() + 14);
+                
+                document.getElementById('summary-date').textContent = today.toLocaleDateString();
+                document.getElementById('summary-due').textContent = dueDate.toLocaleDateString();
+                
+                transactionSummary.classList.remove('hidden');
+            } else {
+                transactionSummary.classList.add('hidden');
+            }
+        }
+
+        function validateTransaction() {
+            validationMessages.innerHTML = '';
+            validationMessages.classList.add('hidden');
+            
+            const errors = [];
+            
+            if (!selectedMember) {
+                errors.push('Please select a member');
+            }
+            
+            if (!selectedBook) {
+                errors.push('Please select a book');
+            }
+            
+            // Check if member already has a rental (based on our requirement of 1 book at a time)
+            if (selectedMember && hasActiveRental(selectedMember.id)) {
+                errors.push('This member already has an active rental. Only one book can be borrowed at a time.');
+            }
+            
+            if (errors.length > 0) {
+                processBorrowingBtn.disabled = true;
+                displayValidationErrors(errors);
+            } else {
+                processBorrowingBtn.disabled = false;
+            }
+        }
+
+        function displayValidationErrors(errors) {
+            validationMessages.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h4 class="font-bold">Please address the following issues:</h4>
+                        <ul class="list-disc list-inside mt-1">
+                            ${errors.map(error => `<li>${error}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            validationMessages.classList.remove('hidden');
+        }
+
+        // Placeholder function for checking member rentals
+        function hasActiveRental(memberId) {
+            // This would normally make an API call to check active rentals
+            // For now, return false as placeholder
+            return false;
+        }
+
+        function checkMemberRentals(memberId) {
+            // Placeholder for checking current rentals
+            // This would make an API call to get current rentals
+            document.getElementById('rental-count').textContent = '0';
+            document.getElementById('current-rentals').textContent = 'No current rentals';
+        }
+
+        async function processBorrowing() {
+            if (!selectedMember || !selectedBook) {
+                showAlert('Please select both a member and a book', 'error');
+                return;
+            }
+
+            try {
+                // This would normally make an API call to create the rental
+                // Since no API development is required, we'll simulate success
+                console.log('Processing borrowing:', {
+                    memberID: selectedMember.id,
+                    bookISBN: selectedBook.ISBN,
+                    member: selectedMember,
+                    book: selectedBook
+                });
+
+                // Simulate API delay
+                processBorrowingBtn.disabled = true;
+                processBorrowingBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing...';
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                showSuccessModal();
+                
+            } catch (error) {
+                console.error('Error processing borrowing:', error);
+                showErrorModal('Failed to process borrowing. Please try again.');
+            } finally {
+                processBorrowingBtn.disabled = false;
+                processBorrowingBtn.innerHTML = '<i class="fas fa-handshake mr-2"></i> Process Borrowing';
+            }
+        }
+
+        function clearAll() {
+            clearMemberSelection();
+            clearBookSelection();
+        }
+
+        // Modal functions
+        function showSuccessModal() {
+            document.getElementById('success-modal').classList.add('modal-open');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.remove('modal-open');
+            clearAll();
+        }
+
+        function showErrorModal(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-modal').classList.add('modal-open');
+        }
+
+        function closeErrorModal() {
+            document.getElementById('error-modal').classList.remove('modal-open');
+        }
+
+        // Utility function
+        function showAlert(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-info';
+            const icon = type === 'error' ? 'fa-exclamation-triangle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+            
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} mb-4`;
+            alert.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.insertBefore(alert, document.body.firstChild);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

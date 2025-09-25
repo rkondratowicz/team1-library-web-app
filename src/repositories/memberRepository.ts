@@ -100,4 +100,38 @@ export class MemberRepository {
       }
     });
   }
+
+  update(id: number, member: CreateMemberRequest): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE members SET 
+         Fname = ?, Sname = ?, email = ?, phone = ?, 
+         address = ?, city = ?, postcode = ? 
+         WHERE id = ?`,
+        [
+          member.Fname,
+          member.Sname,
+          member.email,
+          member.phone,
+          member.address,
+          member.city,
+          member.postcode,
+          id,
+        ],
+        (err: unknown) => {
+          if (err) return reject(err);
+          resolve();
+        }
+      );
+    });
+  }
+
+  delete(id: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run("DELETE FROM members WHERE id = ?", [id], (err: unknown) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
 }

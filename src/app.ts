@@ -39,6 +39,42 @@ app.get("/", (_req, res) => {
   res.render("index", { title: "Library Home" });
 });
 
+app.get("/books", async (_req, res) => {
+  try {
+    const books = await bookService.getAllBooks();
+    res.render("books", { title: "Books Management", books: books });
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    res.render("books", { title: "Books Management", books: [] });
+  }
+});
+
+app.get("/members", (_req, res) => {
+  res.render("members", { title: "Members Management" });
+});
+
+app.get("/borrowing", (_req, res) => {
+  res.render("borrowing", { title: "Book Borrowing Management" });
+});
+
+app.get("/reports", (_req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>Reports - Coming Soon</title>
+        <link href="/output.css" rel="stylesheet">
+      </head>
+      <body class="min-h-screen bg-base-100 flex items-center justify-center">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold mb-4">Reports & Analytics</h1>
+          <p class="text-xl mb-4">Coming Soon!</p>
+          <a href="/" class="btn btn-primary">Return Home</a>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

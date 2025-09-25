@@ -16,6 +16,13 @@ export class BookService {
     return await this.bookRepository.findByTitle(title);
   }
 
+  async searchBooks(searchTerm: string): Promise<Book[]> {
+    if (!searchTerm || searchTerm.trim().length === 0) {
+      return await this.bookRepository.findAll();
+    }
+    return await this.bookRepository.searchBooks(searchTerm.trim());
+  }
+
   async addBook(book: Book): Promise<Book> {
     return await this.bookRepository.create(book);
   }

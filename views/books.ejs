@@ -5,9 +5,28 @@
     <title>Books</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/output.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+    <!-- Navigation -->
+    <div class="navbar bg-primary text-primary-content shadow-lg">
+        <div class="flex-1">
+            <a href="/" class="btn btn-ghost text-xl">
+                <i class="fas fa-book mr-2"></i>
+                Library Management
+            </a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/books" class="text-primary-content font-bold">📚 Books</a></li>
+                <li><a href="/members" class="text-primary-content">👥 Members</a></li>
+                <li><a href="/borrowing" class="text-primary-content">📖 Borrowing</a></li>
+                <li><a href="/" class="text-primary-content">🏠 Home</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4">
     <header>
         <h1 class="text-3xl font-bold text-center my-6">Library Books</h1>
         <div class="flex justify-center mb-6">
@@ -206,5 +225,6 @@
             });
         }
     </script>
+    </div> <!-- Close container -->
 </body>
 </html>
