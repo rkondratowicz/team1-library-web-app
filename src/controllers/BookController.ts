@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { Book } from "../models/Book.js";
 import type { BookService } from "../services/BookService.js";
 
 export class BookController {
@@ -54,8 +55,8 @@ export class BookController {
     try {
       const books = await this.bookService.getAllBooks();
       res.render("books", { books: books });
-    } catch (error) {
-      const books: any[] = [];
+    } catch (_error) {
+      const books: Book[] = [];
       res.status(500).render("books", { books, errors: ["Error retrieving books"] });
     }
   }
@@ -94,7 +95,7 @@ export class BookController {
         res.status(400).json({ success: false, message: "Search term is required" });
         return;
       }
-      
+
       const books = await this.bookService.searchBooks(searchTerm);
       res.json(books);
     } catch (error) {
