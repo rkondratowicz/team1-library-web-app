@@ -36,14 +36,8 @@ export class BookRepository {
       this.db.run(
         `INSERT INTO books (ISBN, Author, Title, publicationYear, description)
          VALUES (?, ?, ?, ?, ?)`,
-        [
-          book.ISBN,
-          book.author,
-          book.title,
-          book.publicationYear,
-          book.description
-        ],
-        function (err: unknown) {
+        [book.ISBN, book.author, book.title, book.publicationYear, book.description],
+        (err: unknown) => {
           if (err) return reject(err);
           resolve(book);
         }

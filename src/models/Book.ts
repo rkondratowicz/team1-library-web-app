@@ -1,5 +1,5 @@
 export interface Book {
-  ISBN: number
+  ISBN: number;
   title: string;
   author: string;
   publicationYear: number;
