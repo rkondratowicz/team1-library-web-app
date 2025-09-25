@@ -75,4 +75,17 @@ export class BookRepository {
       );
     });
   }
+
+  delete(isbn: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `DELETE FROM Books WHERE ISBN = ?`,
+        [isbn],
+        (err: unknown) => {
+          if (err) return reject(err);
+          resolve();
+        }
+      );
+    });
+  }
 }

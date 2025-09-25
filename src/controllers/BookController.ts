@@ -34,8 +34,7 @@ export class BookController {
         Description: Description || "",
       });
       // After successful add, re-fetch books and render
-      const books = await this.bookService.getAllBooks();
-      res.render("books", { books });
+      res.redirect("/books");
     } catch (error: unknown) {
       const books = await this.bookService.getAllBooks();
       if (
@@ -113,11 +112,34 @@ export class BookController {
         PublicationYear: Number(PublicationYear),
         Description: Description || "",
       });
-      const books = await this.bookService.getAllBooks();
-      res.render("books", { books });
+      res.redirect("/books");
+
     } catch (_serror: unknown) {
       const books = await this.bookService.getAllBooks();
       res.status(500).render("books", { books, errors: ["Error editing book"] });
+    }
+  }
+
+  async deleteBook(req: Request, res: Response): Promise<void> {
+    const { ISBN } = req.body;
+    const errors: string[] = [];
+
+    if (!ISBN) {
+      errors.push("ISBN is required");
+    }
+
+    if (errors.length > 0) {
+      const books = await this.bookService.getAllBooks();
+      res.status(400).render("books", { books, errors });
+      return;
+    }
+
+    try {
+      await this.bookService.deleteBook(ISBN);
+      res.redirect("/books");
+    } catch (error: unknown) {
+      const books = await this.bookService.getAllBooks();
+      res.status(500).render("books", { books, errors: ["Error deleting book"] });
     }
   }
 

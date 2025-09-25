@@ -30,4 +30,8 @@ export class BookService {
   async editBook(book: Book): Promise<void> {
     await this.bookRepository.update(book);
   }
+
+  async deleteBook(isbn: string): Promise<void> {
+    await this.bookRepository.delete(isbn);
+  }
 }

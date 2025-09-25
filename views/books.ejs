@@ -33,7 +33,7 @@
             <button id="openAddBookModal" class="btn btn-primary">Add Book</button>
         </div>
         <!-- Add Book Modal -->
-        <div id="addBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+        <div id="addBookModal" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-50 hidden">
             <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
                 <button id="closeAddBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
                 <h2 class="text-xl font-semibold mb-4">Add New Book</h2>
@@ -76,7 +76,7 @@
         </div>
 
         <!-- Edit Book Modal -->
-        <div id="editBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+        <div id="editBookModal" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-50 hidden">
             <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
                 <button id="closeEditBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
                 <h2 class="text-xl font-semibold mb-4">Edit Book</h2>
@@ -134,7 +134,8 @@
                             <td><%= book.Description || '' %></td>
                             <td>
                                 <a href="/books/edit/<%= book.BookID %>" class="btn btn-outline btn-info btn-sm" data-book-id="<%= book.ISBN %>">Edit</a>
-                                <form action="/books/delete/<%= book.BookID %>" method="POST" class="inline">
+                                <form action="/api/books/delete" method="POST" class="inline">
+                                    <input type="hidden" name="ISBN" value="<%= book.ISBN %>">
                                     <button type="submit" class="btn btn-outline btn-error btn-sm ml-2">Remove</button>
                                 </form>
                             </td>
