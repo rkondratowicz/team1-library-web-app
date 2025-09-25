@@ -38,15 +38,6 @@
             </ul>
         </div>
         <div class="navbar-end">
-            <!-- Global Search -->
-            <div class="form-control">
-                <div class="input-group">
-                    <input type="text" id="globalSearch" placeholder="Search..." class="input input-bordered w-full max-w-xs" />
-                    <button class="btn btn-square" onclick="performSearch()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -204,23 +195,6 @@
         function scrollToFeatures() {
             document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
         }
-
-        // Global search functionality
-        function performSearch() {
-            const searchTerm = document.getElementById('globalSearch').value.trim();
-            if (searchTerm) {
-                // For now, redirect to books page with search parameter
-                // This can be enhanced to search across all sections
-                window.location.href = `/books?search=${encodeURIComponent(searchTerm)}`;
-            }
-        }
-
-        // Handle Enter key in search box
-        document.getElementById('globalSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
 
         // Load statistics
         async function loadStatistics() {
