@@ -36,7 +36,7 @@ export class BookRepository {
       this.db.run(
         `INSERT INTO books (ISBN, Author, Title, publicationYear, description)
          VALUES (?, ?, ?, ?, ?)`,
-        [book.ISBN, book.author, book.title, book.publicationYear, book.description],
+        [book.ISBN, book.Author, book.Title, book.PublicationYear, book.Description],
         (err: unknown) => {
           if (err) return reject(err);
           resolve(book);
@@ -49,7 +49,7 @@ export class BookRepository {
     return new Promise((resolve, reject) => {
       this.db.run(
         `UPDATE Books SET Title = ?, Author = ?, PublicationYear = ?, Description = ? WHERE ISBN = ?`,
-        [book.title, book.author, book.publicationYear, book.description, book.ISBN],
+        [book.Title, book.Author, book.PublicationYear, book.Description, book.ISBN],
         (err: unknown) => {
             if (err) return reject(err);
             resolve();

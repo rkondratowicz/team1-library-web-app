@@ -27,7 +27,7 @@
                         </ul>
                     </div>
                 <% } %>
-                <form action="/api/books" method="POST">
+                <form action="/api/books/add" method="POST">
                     <div class="mb-4">
                         <label for="title" class="block mb-1">Title:</label>
                         <input type="text" id="title" name="title" class="input input-bordered w-full" required>
@@ -70,7 +70,7 @@
                         </ul>
                     </div>
                 <% } %>
-                <form id="editForm" action="" method="POST">
+                <form action="/api/books/edit" method="POST">
                     <div class="mb-4">
                         <label for="editTitle" class="block mb-1">Title:</label>
                         <input type="text" id="editTitle" name="title" class="input input-bordered w-full" required>
@@ -191,39 +191,7 @@
             });
         });
 
-        // Intercept Edit Book form submit and send PUT request via fetch
-        if (editBookForm) {
-            console.Log('Setting up edit form submit handler');
-            editBookForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (!currentEditBookId) return;
-                const formData = new FormData(editBookForm);
-                const data = {};
-                formData.forEach((value, key) => {
-                    data[key] = value;
-                });
-                console.Log('Submitting edit for book ID:', currentEditBookId, data);
-                fetch(`/api/books/edit/${currentEditBookId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Optionally close modal and reload page or update table
-                        editModal.classList.add('hidden');
-                        window.location.reload();
-                    } else {
-                        return response.text().then(text => { throw new Error(text); });
-                    }
-                })
-                .catch(error => {
-                    alert('Error updating book: ' + error.message);
-                });
-            });
-        }
+        
 
         // Close Edit Book Modal
         if (closeEditModalBtn && editModal) {

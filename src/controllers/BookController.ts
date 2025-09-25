@@ -9,13 +9,13 @@ export class BookController {
   }
 
   async addBook(req: Request, res: Response): Promise<void> {
-    const { title, author, ISBN, publicationYear, description } = req.body;
+    const { Title, Author, ISBN, PublicationYear, Description } = req.body;
     const errors: string[] = [];
 
-    if (!title) errors.push("Title is required");
-    if (!author) errors.push("Author is required");
+    if (!Title) errors.push("Title is required");
+    if (!Author) errors.push("Author is required");
     if (!ISBN) errors.push("ISBN is required");
-    if (!publicationYear) errors.push("Publication year is required");
+    if (!PublicationYear) errors.push("Publication year is required");
 
     if (errors.length > 0) {
       // Get all books to re-render the page with errors
@@ -26,11 +26,11 @@ export class BookController {
 
     try {
       await this.bookService.addBook({
-        title,
-        author,
+        Title,
+        Author,
         ISBN,
-        publicationYear: Number(publicationYear),
-        description: description || "",
+        PublicationYear: Number(PublicationYear),
+        Description: Description || "",
       });
       // After successful add, re-fetch books and render
       const books = await this.bookService.getAllBooks();
@@ -78,14 +78,13 @@ export class BookController {
     }
   }
   async editBook(req: Request, res: Response): Promise<void> {
-    const ISBN = Number(req.params.ISBN);
-    const { title, author, publicationYear, description } = req.body;
+    const { ISBN, Title, Author, PublicationYear, Description } = req.body;
     const errors: string[] = [];
 
-      if (!title) errors.push("Title is required");
-      if (!author) errors.push("Author is required");
+      if (!Title) errors.push("Title is required");
+      if (!Author) errors.push("Author is required");
       if (!ISBN) errors.push("ISBN is required");
-      if (!publicationYear) errors.push("Publication year is required");
+      if (!PublicationYear) errors.push("Publication year is required");
 
       if (errors.length > 0) {
         const books = await this.bookService.getAllBooks();
@@ -96,10 +95,10 @@ export class BookController {
       try {
         await this.bookService.editBook({
           ISBN,
-          title,
-          author,
-          publicationYear: Number(publicationYear),
-          description: description || "",
+          Title,
+          Author,
+          PublicationYear: Number(PublicationYear),
+          Description: Description || "",
         });
         const books = await this.bookService.getAllBooks();
         res.render("books", { books });
