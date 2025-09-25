@@ -39,6 +39,10 @@ app.get("/", (_req, res) => {
   res.render("index", { title: "Library Home" });
 });
 
+app.get("/members", (_req, res) => {
+  res.render("members", { title: "Members Management" });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

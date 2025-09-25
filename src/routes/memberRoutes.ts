@@ -20,5 +20,13 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // GET /api/members/:id
   router.get("/members/:id", (req, res) => memberController.getMemberById(req, res));
 
+  // Update member by ID
+  // PUT /api/members/:id
+  router.put("/members/:id", (req, res) => memberController.updateMember(req, res));
+
+  // Delete member by ID
+  // DELETE /api/members/:id
+  router.delete("/members/:id", (req, res) => memberController.deleteMember(req, res));
+
   return router;
 }

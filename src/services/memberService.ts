@@ -67,4 +67,71 @@ export class MemberService {
 
     return createdMember;
   }
+
+  async updateMember(id: number, memberData: CreateMemberRequest): Promise<Member> {
+    // Validate ID
+    if (!id || id <= 0) {
+      throw new Error("Invalid member ID");
+    }
+
+    // Check if member exists
+    const existingMember = await this.memberRepository.findById(id);
+    if (!existingMember) {
+      throw new Error("Member not found");
+    }
+
+    // Validate required fields
+    if (
+      !memberData.Fname ||
+      !memberData.Sname ||
+      !memberData.email ||
+      !memberData.phone ||
+      !memberData.address ||
+      !memberData.city ||
+      !memberData.postcode
+    ) {
+      throw new Error(
+        "All fields are required: Fname, Sname, email, phone, address, city, postcode"
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(memberData.email)) {
+      throw new Error("Invalid email format");
+    }
+
+    // Check if email already exists for a different member
+    const memberWithEmail = await this.memberRepository.findByEmail(memberData.email);
+    if (memberWithEmail && memberWithEmail.id !== id) {
+      throw new Error("A member with this email already exists");
+    }
+
+    // Update the member
+    await this.memberRepository.update(id, memberData);
+
+    // Return the updated member
+    const updatedMember = await this.memberRepository.findById(id);
+    if (!updatedMember) {
+      throw new Error("Failed to retrieve updated member");
+    }
+
+    return updatedMember;
+  }
+
+  async deleteMember(id: number): Promise<void> {
+    // Validate ID
+    if (!id || id <= 0) {
+      throw new Error("Invalid member ID");
+    }
+
+    // Check if member exists
+    const existingMember = await this.memberRepository.findById(id);
+    if (!existingMember) {
+      throw new Error("Member not found");
+    }
+
+    // Delete the member
+    await this.memberRepository.delete(id);
+  }
 }
