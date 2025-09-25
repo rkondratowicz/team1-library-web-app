@@ -108,9 +108,17 @@ export class MemberRepository {
          Fname = ?, Sname = ?, email = ?, phone = ?, 
          address = ?, city = ?, postcode = ? 
          WHERE id = ?`,
-        [member.Fname, member.Sname, member.email, member.phone, 
-         member.address, member.city, member.postcode, id],
-        function (err: unknown) {
+        [
+          member.Fname,
+          member.Sname,
+          member.email,
+          member.phone,
+          member.address,
+          member.city,
+          member.postcode,
+          id,
+        ],
+        (err: unknown) => {
           if (err) return reject(err);
           resolve();
         }
@@ -120,14 +128,10 @@ export class MemberRepository {
 
   delete(id: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db.run(
-        "DELETE FROM members WHERE id = ?",
-        [id],
-        function (err: unknown) {
-          if (err) return reject(err);
-          resolve();
-        }
-      );
+      this.db.run("DELETE FROM members WHERE id = ?", [id], (err: unknown) => {
+        if (err) return reject(err);
+        resolve();
+      });
     });
   }
 }
