@@ -70,23 +70,23 @@
                         </ul>
                     </div>
                 <% } %>
-                <form action="/api/books/edit" method="POST">
+                <form id="editBookForm" action="/api/books/edit" method="POST">
                     <div class="mb-4">
                         <label for="editTitle" class="block mb-1">Title:</label>
-                        <input type="text" id="editTitle" name="title" class="input input-bordered w-full" required>
+                        <input type="text" id="editTitle" name="Title" class="input input-bordered w-full" required>
                     </div>
                     <div class="mb-4">
                         <label for="editAuthor" class="block mb-1">Author:</label>
-                        <input type="text" id="editAuthor" name="author" class="input input-bordered w-full" required>
+                        <input type="text" id="editAuthor" name="Author" class="input input-bordered w-full" required>
                     </div>
-                    <!-- ISBN field removed: ISBN is primary key and should not be editable -->
+                    <input type="hidden" id="editISBN" name="ISBN">
                     <div class="mb-4">
                         <label for="editPublicationYear" class="block mb-1">Year:</label>
-                        <input type="number" id="editPublicationYear" name="publicationYear" class="input input-bordered w-full" min="0" required>
+                        <input type="number" id="editPublicationYear" name="PublicationYear" class="input input-bordered w-full" min="0" required>
                     </div>
                     <div class="mb-4">
                         <label for="editDescription" class="block mb-1">Description:</label>
-                        <textarea id="editDescription" name="description" class="textarea textarea-bordered w-full"></textarea>
+                        <textarea id="editDescription" name="Description" class="textarea textarea-bordered w-full"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-full">Save Changes</button>
                 </form>
@@ -188,6 +188,7 @@
                 document.getElementById('editAuthor').value = author;
                 document.getElementById('editPublicationYear').value = publicationYear;
                 document.getElementById('editDescription').value = description;
+                document.getElementById('editISBN').value = bookId; // Set hidden ISBN field
             });
         });
 

@@ -81,12 +81,15 @@ export class BookController {
     const { ISBN, Title, Author, PublicationYear, Description } = req.body;
     const errors: string[] = [];
 
+      console.log("Edit Book Request Body:", req.body);
+
       if (!Title) errors.push("Title is required");
       if (!Author) errors.push("Author is required");
       if (!ISBN) errors.push("ISBN is required");
       if (!PublicationYear) errors.push("Publication year is required");
 
       if (errors.length > 0) {
+        console.log("Validation errors:", errors);
         const books = await this.bookService.getAllBooks();
         res.status(400).render("books", { books, errors });
         return;
