@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS members;
+CREATE TABLE members( id integer PRIMARY KEY AUTOINCREMENT, Fname varchar(50)NOT NULL, Sname varchar(50)NOT NULL, email varchar(100)NOT NULL UNIQUE, phone varchar(15)NOT NULL, address varchar(255)NOT NULL, city varchar(50)NOT NULL, postcode varchar(10)NOT NULL, join_date timestamp DEFAULT CURRENT_TIMESTAMP );
