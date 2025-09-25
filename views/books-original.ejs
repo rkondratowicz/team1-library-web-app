@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="navbar bg-primary text-primary-content shadow-lg">
+        <div class="flex-1">
+            <a href="/" class="btn btn-ghost text-xl">
+                <i class="fas fa-book mr-2"></i>
+                Library Management
+            </a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/books" class="text-primary-content font-bold">📚 Books</a></li>
+                <li><a href="/members" class="text-primary-content">👥 Members</a></li>
+                <li><a href="/borrowing" class="text-primary-content">📖 Borrowing</a></li>
+                <li><a href="/" class="text-primary-content">🏠 Home</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4">
+    <header>
+        <h1 class="text-3xl font-bold text-center my-6">Library Books</h1>
+        <div class="flex justify-center mb-6">
+            <button id="openAddBookModal" class="btn btn-primary">Add Book</button>
+        </div>
+        <!-- Add Book Modal -->
+        <div id="addBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
+                <button id="closeAddBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                <h2 class="text-xl font-semibold mb-4">Add New Book</h2>
+                <% if (typeof errors !== 'undefined' && errors.length && typeof editMode === 'undefined') { %>
+                    <div class="mb-4 text-red-600">
+                        <ul>
+                            <% errors.forEach(function(error) { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+                <form action="/api/books/add" method="POST">
+                    <div class="mb-4">
+                        <label for="title" class="block mb-1">Title:</label>
+                        <input type="text" id="title" name="Title" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="author" class="block mb-1">Author:</label>
+                        <input type="text" id="author" name="Author" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="ISBN" class="block mb-1">ISBN:</label>
+                        <div class="flex">
+                            <input type="text" id="ISBN" name="ISBN" class="input input-bordered w-full" required>
+                            <button type="button" id="generateISBN" class="btn btn-secondary ml-2">Generate</button>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="publicationYear" class="block mb-1">Year:</label>
+                        <input type="number" id="publicationYear" name="PublicationYear" class="input input-bordered w-full" min="0" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="block mb-1">Description:</label>
+                        <textarea id="description" name="Description" class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Add Book</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Book Modal -->
+        <div id="editBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
+                <button id="closeEditBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                <h2 class="text-xl font-semibold mb-4">Edit Book</h2>
+                <% if (typeof errors !== 'undefined' && errors.length && typeof editMode !== 'undefined') { %>
+                    <div class="mb-4 text-red-600">
+                        <ul>
+                            <% errors.forEach(function(error) { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+                <form id="editBookForm" action="/api/books/edit" method="POST">
+                    <div class="mb-4">
+                        <label for="editTitle" class="block mb-1">Title:</label>
+                        <input type="text" id="editTitle" name="Title" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editAuthor" class="block mb-1">Author:</label>
+                        <input type="text" id="editAuthor" name="Author" class="input input-bordered w-full" required>
+                    </div>
+                    <input type="hidden" id="editISBN" name="ISBN">
+                    <div class="mb-4">
+                        <label for="editPublicationYear" class="block mb-1">Year:</label>
+                        <input type="number" id="editPublicationYear" name="PublicationYear" class="input input-bordered w-full" min="0" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editDescription" class="block mb-1">Description:</label>
+                        <textarea id="editDescription" name="Description" class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </header>
+    <main>
+            <% if (books && books.length) { %>
+            <div class="overflow-x-auto px-4">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Year</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% books.forEach(function(book) { %>
+                        <tr>
+                            <td class="font-semibold"><%= book.Title %></td>
+                            <td><%= book.Author %></td>
+                            <td><%= book.PublicationYear || '' %></td>
+                            <td><%= book.Description || '' %></td>
+                            <td>
+                                <a href="/books/edit/<%= book.BookID %>" class="btn btn-outline btn-info btn-sm" data-book-id="<%= book.ISBN %>">Edit</a>
+                                <form action="/books/delete/<%= book.BookID %>" method="POST" class="inline">
+                                    <button type="submit" class="btn btn-outline btn-error btn-sm ml-2">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } else { %>
+                <div class="text-center text-lg text-gray-500 mt-10">No books available.</div>
+            <% } %>
+    </main>
+    <footer>
+        <p>&copy; <%= new Date().getFullYear() %> Team 1 Library</p>
+    </footer>
+    <script>
+        const openModalBtn = document.getElementById('openAddBookModal');
+        const closeModalBtn = document.getElementById('closeAddBookModal');
+        const modal = document.getElementById('addBookModal');
+        const generateISBNBtn = document.getElementById('generateISBN');
+        const isbnInput = document.getElementById('ISBN');
+
+        // Edit Book modal elements
+        const editModal = document.getElementById('editBookModal');
+        const closeEditModalBtn = document.getElementById('closeEditBookModal');
+        const editBookForm = document.getElementById('editBookForm');
+
+        // Open Add Book Modal
+        if (openModalBtn && closeModalBtn && modal) {
+            openModalBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Generate ISBN for Add Book
+        if (generateISBNBtn && isbnInput) {
+            generateISBNBtn.addEventListener('click', () => {
+                let isbn = '';
+                for (let i = 0; i < 13; i++) {
+                    isbn += Math.floor(Math.random() * 10);
+                }
+                isbnInput.value = isbn;
+            });
+        }
+
+        // Open Edit Book Modal and pre-fill fields
+        let currentEditBookId = null;
+        document.querySelectorAll('.btn-info').forEach(function(editBtn) {
+            editBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tr = editBtn.closest('tr');
+                const bookId = editBtn.getAttribute('data-book-id');
+                console.log('Editing book with ID:', bookId);
+                currentEditBookId = bookId;
+                // Get book data from table row
+                const title = tr.querySelector('td:nth-child(1)').textContent;
+                const author = tr.querySelector('td:nth-child(2)').textContent;
+                const publicationYear = tr.querySelector('td:nth-child(3)').textContent;
+                const description = tr.querySelector('td:nth-child(4)').textContent;
+                editModal.classList.remove('hidden');
+                document.getElementById('editTitle').value = title;
+                document.getElementById('editAuthor').value = author;
+                document.getElementById('editPublicationYear').value = publicationYear;
+                document.getElementById('editDescription').value = description;
+                document.getElementById('editISBN').value = bookId; // Set hidden ISBN field
+            });
+        });
+
+        
+
+        // Close Edit Book Modal
+        if (closeEditModalBtn && editModal) {
+            closeEditModalBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === editModal) {
+                    editModal.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+    </div> <!-- Close container -->
+</body>
+</html>
