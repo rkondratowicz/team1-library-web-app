@@ -8,6 +8,43 @@ export class BookController {
     this.bookService = bookService;
   }
 
+  async addBook(req: Request, res: Response): Promise<void> {
+    const { title, author, ISBN, publicationYear, description } = req.body;
+    const errors: string[] = [];
+
+    if (!title) errors.push("Title is required");
+    if (!author) errors.push("Author is required");
+    if (!ISBN) errors.push("ISBN is required");
+    if (!publicationYear) errors.push("Publication year is required");
+
+    if (errors.length > 0) {
+      // Get all books to re-render the page with errors
+      const books = await this.bookService.getAllBooks();
+      res.status(400).render("books", { books, errors });
+      return;
+    }
+
+    try {
+      await this.bookService.addBook({
+        title,
+        author,
+        ISBN,
+        publicationYear: Number(publicationYear),
+        description: description || ""
+      });
+      // After successful add, re-fetch books and render
+      const books = await this.bookService.getAllBooks();
+      res.render("books", { books });
+    } catch (error: any) {
+      const books = await this.bookService.getAllBooks();
+      if (error.code === "SQLITE_CONSTRAINT") {
+        res.status(409).render("books", { books, errors: ["ISBN must be unique"] });
+      } else {
+        res.status(500).render("books", { books, errors: ["Error adding book"] });
+      }
+    }
+  }
+
   async getAllBooks(_req: Request, res: Response): Promise<void> {
     try {
       const books = await this.bookService.getAllBooks();
