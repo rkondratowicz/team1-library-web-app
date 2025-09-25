@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { MemberController } from "../controllers/memberController.js";
+import type { MemberController } from "../controllers/MemberController.js";
 
 export function createMemberRoutes(memberController: MemberController): Router {
   const router = Router();
@@ -19,6 +19,14 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // Get member by ID (optional)
   // GET /api/members/:id
   router.get("/members/:id", (req, res) => memberController.getMemberById(req, res));
+
+  // Update member by ID
+  // PUT /api/members/:id
+  router.put("/members/:id", (req, res) => memberController.updateMember(req, res));
+
+  // Delete member by ID
+  // DELETE /api/members/:id
+  router.delete("/members/:id", (req, res) => memberController.deleteMember(req, res));
 
   return router;
 }

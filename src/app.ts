@@ -1,15 +1,15 @@
 import path from "node:path";
 import express from "express";
 import { BookController } from "./controllers/BookController.js";
-import { MemberController } from "./controllers/memberController.js";
+import { MemberController } from "./controllers/MemberController.js";
 import { setupMiddleware } from "./middleware/index.js";
 import { BookRepository } from "./repositories/BookRepository.js";
-import { MemberRepository } from "./repositories/memberRepository.js";
+import { MemberRepository } from "./repositories/MemberRepository.js";
 import { createBookRoutes } from "./routes/BookRoutes.js";
 import { createGreetRoutes } from "./routes/GreetRoutes.js";
-import { createMemberRoutes } from "./routes/memberRoutes.js";
+import { createMemberRoutes } from "./routes/MemberRoutes.js";
 import { BookService } from "./services/BookService.js";
-import { MemberService } from "./services/memberService.js";
+import { MemberService } from "./services/MemberService.js";
 
 const app = express();
 const port = 3000;
@@ -35,6 +35,10 @@ app.use("/api", createGreetRoutes());
 
 app.get("/", (_req, res) => {
   res.render("index", { title: "Library Home" });
+});
+
+app.get("/members", (_req, res) => {
+  res.render("members", { title: "Members Management" });
 });
 
 app.listen(port, () => {
