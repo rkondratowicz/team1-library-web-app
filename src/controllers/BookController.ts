@@ -77,4 +77,35 @@ export class BookController {
         .json({ success: false, message: "Error retrieving book", errors: [String(error)] });
     }
   }
+  async editBook(req: Request, res: Response): Promise<void> {
+    const ISBN = Number(req.params.ISBN);
+    const { title, author, publicationYear, description } = req.body;
+    const errors: string[] = [];
+
+      if (!title) errors.push("Title is required");
+      if (!author) errors.push("Author is required");
+      if (!ISBN) errors.push("ISBN is required");
+      if (!publicationYear) errors.push("Publication year is required");
+
+      if (errors.length > 0) {
+        const books = await this.bookService.getAllBooks();
+        res.status(400).render("books", { books, errors });
+        return;
+      }
+
+      try {
+        await this.bookService.editBook({
+          ISBN,
+          title,
+          author,
+          publicationYear: Number(publicationYear),
+          description: description || "",
+        });
+        const books = await this.bookService.getAllBooks();
+        res.render("books", { books });
+      } catch (error: unknown) {
+        const books = await this.bookService.getAllBooks();
+        res.status(500).render("books", { books, errors: ["Error editing book"] });
+      }
+    }
 }

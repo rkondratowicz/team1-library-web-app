@@ -18,7 +18,7 @@
             <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
                 <button id="closeAddBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
                 <h2 class="text-xl font-semibold mb-4">Add New Book</h2>
-                <% if (typeof errors !== 'undefined' && errors.length) { %>
+                <% if (typeof errors !== 'undefined' && errors.length && typeof editMode === 'undefined') { %>
                     <div class="mb-4 text-red-600">
                         <ul>
                             <% errors.forEach(function(error) { %>
@@ -55,6 +55,43 @@
                 </form>
             </div>
         </div>
+
+        <!-- Edit Book Modal -->
+        <div id="editBookModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+            <div class="bg-white p-6 rounded shadow w-full max-w-lg mx-auto relative">
+                <button id="closeEditBookModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                <h2 class="text-xl font-semibold mb-4">Edit Book</h2>
+                <% if (typeof errors !== 'undefined' && errors.length && typeof editMode !== 'undefined') { %>
+                    <div class="mb-4 text-red-600">
+                        <ul>
+                            <% errors.forEach(function(error) { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+                <form id="editForm" action="" method="POST">
+                    <div class="mb-4">
+                        <label for="editTitle" class="block mb-1">Title:</label>
+                        <input type="text" id="editTitle" name="title" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editAuthor" class="block mb-1">Author:</label>
+                        <input type="text" id="editAuthor" name="author" class="input input-bordered w-full" required>
+                    </div>
+                    <!-- ISBN field removed: ISBN is primary key and should not be editable -->
+                    <div class="mb-4">
+                        <label for="editPublicationYear" class="block mb-1">Year:</label>
+                        <input type="number" id="editPublicationYear" name="publicationYear" class="input input-bordered w-full" min="0" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="editDescription" class="block mb-1">Description:</label>
+                        <textarea id="editDescription" name="description" class="textarea textarea-bordered w-full"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">Save Changes</button>
+                </form>
+            </div>
+        </div>
     </header>
     <main>
             <% if (books && books.length) { %>
@@ -77,7 +114,7 @@
                             <td><%= book.PublicationYear || '' %></td>
                             <td><%= book.Description || '' %></td>
                             <td>
-                                <a href="/books/edit/<%= book.BookID %>" class="btn btn-outline btn-info btn-sm">Edit</a>
+                                <a href="/books/edit/<%= book.BookID %>" class="btn btn-outline btn-info btn-sm" data-book-id="<%= book.ISBN %>">Edit</a>
                                 <form action="/books/delete/<%= book.BookID %>" method="POST" class="inline">
                                     <button type="submit" class="btn btn-outline btn-error btn-sm ml-2">Remove</button>
                                 </form>
@@ -100,6 +137,13 @@
         const modal = document.getElementById('addBookModal');
         const generateISBNBtn = document.getElementById('generateISBN');
         const isbnInput = document.getElementById('ISBN');
+
+        // Edit Book modal elements
+        const editModal = document.getElementById('editBookModal');
+        const closeEditModalBtn = document.getElementById('closeEditBookModal');
+        const editBookForm = document.getElementById('editBookForm');
+
+        // Open Add Book Modal
         if (openModalBtn && closeModalBtn && modal) {
             openModalBtn.addEventListener('click', () => {
                 modal.classList.remove('hidden');
@@ -113,14 +157,83 @@
                 }
             });
         }
+
+        // Generate ISBN for Add Book
         if (generateISBNBtn && isbnInput) {
             generateISBNBtn.addEventListener('click', () => {
-                // Generate a random 13-digit ISBN (not strictly valid, but for demo purposes)
                 let isbn = '';
                 for (let i = 0; i < 13; i++) {
                     isbn += Math.floor(Math.random() * 10);
                 }
                 isbnInput.value = isbn;
+            });
+        }
+
+        // Open Edit Book Modal and pre-fill fields
+        let currentEditBookId = null;
+        document.querySelectorAll('.btn-info').forEach(function(editBtn) {
+            editBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tr = editBtn.closest('tr');
+                const bookId = editBtn.getAttribute('data-book-id');
+                console.log('Editing book with ID:', bookId);
+                currentEditBookId = bookId;
+                // Get book data from table row
+                const title = tr.querySelector('td:nth-child(1)').textContent;
+                const author = tr.querySelector('td:nth-child(2)').textContent;
+                const publicationYear = tr.querySelector('td:nth-child(3)').textContent;
+                const description = tr.querySelector('td:nth-child(4)').textContent;
+                editModal.classList.remove('hidden');
+                document.getElementById('editTitle').value = title;
+                document.getElementById('editAuthor').value = author;
+                document.getElementById('editPublicationYear').value = publicationYear;
+                document.getElementById('editDescription').value = description;
+            });
+        });
+
+        // Intercept Edit Book form submit and send PUT request via fetch
+        if (editBookForm) {
+            console.Log('Setting up edit form submit handler');
+            editBookForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!currentEditBookId) return;
+                const formData = new FormData(editBookForm);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+                console.Log('Submitting edit for book ID:', currentEditBookId, data);
+                fetch(`/api/books/edit/${currentEditBookId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Optionally close modal and reload page or update table
+                        editModal.classList.add('hidden');
+                        window.location.reload();
+                    } else {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                })
+                .catch(error => {
+                    alert('Error updating book: ' + error.message);
+                });
+            });
+        }
+
+        // Close Edit Book Modal
+        if (closeEditModalBtn && editModal) {
+            closeEditModalBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === editModal) {
+                    editModal.classList.add('hidden');
+                }
             });
         }
     </script>

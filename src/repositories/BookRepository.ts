@@ -44,4 +44,18 @@ export class BookRepository {
       );
     });
   }
-}
+
+  update(book: Book): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE Books SET Title = ?, Author = ?, PublicationYear = ?, Description = ? WHERE ISBN = ?`,
+        [book.title, book.author, book.publicationYear, book.description, book.ISBN],
+        (err: unknown) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
+      });
+      }
+
+    }
