@@ -54,21 +54,7 @@ app.get("/members", (_req, res) => {
 });
 
 app.get("/borrowing", (_req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <title>Borrowing - Coming Soon</title>
-        <link href="/output.css" rel="stylesheet">
-      </head>
-      <body class="min-h-screen bg-base-100 flex items-center justify-center">
-        <div class="text-center">
-          <h1 class="text-4xl font-bold mb-4">Borrowing Management</h1>
-          <p class="text-xl mb-4">Coming Soon!</p>
-          <a href="/" class="btn btn-primary">Return Home</a>
-        </div>
-      </body>
-    </html>
-  `);
+  res.render("borrowing", { title: "Book Borrowing Management" });
 });
 
 app.get("/reports", (_req, res) => {

@@ -5,4 +5,5 @@ export interface Book {
   publicationYear: number;
   description: string;
   available?: number;
+
 }

@@ -29,7 +29,12 @@ export class BookService {
     }
     return status;
   }
+
   async addBook(book: Book): Promise<Book> {
     return await this.bookRepository.create(book);
+  }
+
+  async editBook(book: Book): Promise<void> {
+    await this.bookRepository.update(book);
   }
 }
