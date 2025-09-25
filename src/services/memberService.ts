@@ -28,7 +28,10 @@ export class MemberService {
     return await this.memberRepository.search(trimmedQuery);
   }
 
-  async rentBook(memberID: number, bookISBN: string): Promise<{ success: boolean; message: string }> {
+  async rentBook(
+    memberID: number,
+    bookISBN: string
+  ): Promise<{ success: boolean; message: string }> {
     if (!memberID || memberID <= 0) {
       return { success: false, message: "Invalid member ID" };
     }

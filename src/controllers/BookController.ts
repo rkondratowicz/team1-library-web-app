@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import type { Book } from "../models/Book.js";
 import { BookService } from "../services/BookService.js";
 
-
 export class BookController {
   private bookService: BookService;
 
