@@ -4,7 +4,8 @@
 - No changes recorded yet.
 
 ## Next Steps
-- 01_backend_api_add_books.md
+
+- 02_backend_api_edit_books.md
 
 ---
 
