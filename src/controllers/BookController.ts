@@ -113,7 +113,6 @@ export class BookController {
         Description: Description || "",
       });
       res.redirect("/books");
-
     } catch (_serror: unknown) {
       const books = await this.bookService.getAllBooks();
       res.status(500).render("books", { books, errors: ["Error editing book"] });
@@ -137,7 +136,7 @@ export class BookController {
     try {
       await this.bookService.deleteBook(ISBN);
       res.redirect("/books");
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       const books = await this.bookService.getAllBooks();
       res.status(500).render("books", { books, errors: ["Error deleting book"] });
     }
