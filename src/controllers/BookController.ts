@@ -1,10 +1,6 @@
 import type { Request, Response } from "express";
-<<<<<<< HEAD
-
-import  { BookService } from "../services/BookService.js";
-=======
+import type { Book } from "../models/Book.js";
 import { BookService } from "../services/BookService.js";
->>>>>>> 8923486 (fixed linting and checking)
 
 
 export class BookController {

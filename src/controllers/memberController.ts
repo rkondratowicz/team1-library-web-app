@@ -40,9 +40,8 @@ export class MemberController {
         return;
       }
 
-      let bookID: number = 0;
-      bookID = book.ISBN;
-      const result = await this.memberService.rentBook(memberId, bookID);
+      const bookISBN: string = book.ISBN;
+      const result = await this.memberService.rentBook(memberId, bookISBN);
       if (result.success) {
         res.status(200).json({ success: true, message: result.message });
         return;

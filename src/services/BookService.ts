@@ -36,4 +36,8 @@ export class BookService {
   async editBook(book: Book): Promise<void> {
     await this.bookRepository.update(book);
   }
+
+  async searchBooks(searchTerm: string): Promise<Book[]> {
+    return await this.bookRepository.searchBooks(searchTerm);
+  }
 }
