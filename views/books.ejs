@@ -9,19 +9,45 @@
 </head>
 <body>
     <header>
-        <h1>Library Books</h1>
+            <h1 class="text-3xl font-bold text-center my-6">Library Books</h1>
+            <div class="flex justify-center mb-6">
+                <a href="/books/add" class="btn btn-primary">Add Book</a>
+            </div>
     </header>
     <main>
-        <!-- Book list will be rendered here -->
-        <ul class="list">
             <% if (books && books.length) { %>
-                <% books.forEach(function(book) { %>
-                    <li class="list-row"><%= book.Title %> by <%= book.Author %> created in <%=book.PublicationYear %> Description: <%=book.Description %></li>
-                <% }); %>
+            <div class="overflow-x-auto px-4">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Year</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% books.forEach(function(book) { %>
+                        <tr>
+                            <td class="font-semibold"><%= book.Title %></td>
+                            <td><%= book.Author %></td>
+                            <td><%= book.PublicationYear || '' %></td>
+                            <td><%= book.Description || '' %></td>
+                            <td>
+                                <a href="/books/edit/<%= book.BookID %>" class="btn btn-outline btn-info btn-sm">Edit</a>
+                                <form action="/books/delete/<%= book.BookID %>" method="POST" class="inline">
+                                    <button type="submit" class="btn btn-outline btn-error btn-sm ml-2">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
             <% } else { %>
-                <li class="list-row">No books available.</li>
+                <div class="text-center text-lg text-gray-500 mt-10">No books available.</div>
             <% } %>
-        </ul>
     </main>
     <footer>
         <p>&copy; <%= new Date().getFullYear() %> Team 1 Library</p>
