@@ -9,7 +9,10 @@ export function createBookRoutes(bookController: BookController): Router {
   router.get("/getBook/:title", (req, res) => bookController.getBookByTitle(req, res));
 
   // Add new book
-  router.post("/books", (req, res) => bookController.addBook(req, res));
+  router.post("/books/add", (req, res) => bookController.addBook(req, res));
+
+  // Edit existing book
+  router.post("/books/edit", (req, res) => bookController.editBook(req, res));
 
   return router;
 }
