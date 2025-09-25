@@ -8,7 +8,24 @@ export class MemberController {
   constructor() {
     this.memberService = new MemberService();
   }
-
+  async updateMember(req: Request, res: Response): Promise<void> {
+    try {
+      const id: number = req.body.id;
+      const memberData: CreateMemberRequest = req.body.memberData;
+      const updatedMember = await this.memberService.updateMember(id, memberData);
+      res.status(200).json({
+        status: "success",
+        data: updatedMember,
+        message: "Member updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating member:", error);
+      res.status(400).json({
+        error:
+          error instanceof Error ? error.message : "An error occurred while updating the member",
+      });
+    }
+  }
   // GET /api/members/search?q=query
   async searchMembers(req: Request, res: Response): Promise<void> {
     try {

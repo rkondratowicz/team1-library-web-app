@@ -31,6 +31,39 @@ export class MemberRepository {
     });
   }
 
+  updateMember(id: number, updatedData: CreateMemberRequest): Promise<Member> {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE members set Fname=?,Sname=?,email=?,phone=?,address=?,city=?,postcode=? where id=?;`;
+      this.db.run(
+        sql,
+        [
+          updatedData.Fname,
+          updatedData.Sname,
+          updatedData.email,
+          updatedData.phone,
+          updatedData.address,
+          updatedData.city,
+          updatedData.postcode,
+          id,
+        ],
+        (err: Error | null) => {
+          if (err) return reject(err);
+
+          // After update, fetch the updated member
+          this.db.get(
+            "SELECT * FROM members WHERE id = ?",
+            [id],
+            (err: unknown, row: Member | undefined) => {
+              if (err) return reject(err);
+              if (!row) return reject(new Error("Member not found after update"));
+              resolve(row);
+            }
+          );
+        }
+      );
+    });
+  }
+
   findByName(name: string): Promise<Member[]> {
     return new Promise((resolve, reject) => {
       const searchTerm = `%${name}%`;

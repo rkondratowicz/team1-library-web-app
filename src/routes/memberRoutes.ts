@@ -7,7 +7,7 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // Search members by name or ID
   // GET /api/members/search?q=searchTerm
   router.get("/members/search", (req, res) => memberController.searchMembers(req, res));
-
+  router.post("/updateMember", (req, res) => memberController.updateMember(req, res));
   // Add a new member
   // POST /api/members
   router.post("/members", (req, res) => memberController.addMember(req, res));
