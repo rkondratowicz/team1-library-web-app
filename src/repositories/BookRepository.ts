@@ -21,7 +21,7 @@ export class BookRepository {
   findByTitle(title: string): Promise<Book | undefined> {
     return new Promise((resolve, reject) => {
       this.db.get(
-        "SELECT * FROM books WHERE title=?",
+        "SELECT * FROM books WHERE Title=?",
         [title],
         (err: unknown, row: Book | undefined) => {
           if (err) return reject(err);
@@ -31,12 +31,30 @@ export class BookRepository {
     });
   }
 
+  searchBooks(searchTerm: string): Promise<Book[]> {
+    return new Promise((resolve, reject) => {
+      const searchPattern = `%${searchTerm}%`;
+      this.db.all(
+        `SELECT * FROM books 
+         WHERE Title LIKE ? 
+         OR Author LIKE ? 
+         OR CAST(ISBN AS TEXT) LIKE ?
+         ORDER BY Title ASC`,
+        [searchPattern, searchPattern, searchPattern],
+        (err: unknown, rows: Book[]) => {
+          if (err) return reject(err);
+          resolve(rows);
+        }
+      );
+    });
+  }
+
   create(book: Book): Promise<Book> {
     return new Promise((resolve, reject) => {
       this.db.run(
-        `INSERT INTO books (ISBN, Author, Title, publicationYear, description)
+        `INSERT INTO books (ISBN, Author, Title, PublicationYear, Description)
          VALUES (?, ?, ?, ?, ?)`,
-        [book.ISBN, book.author, book.title, book.publicationYear, book.description],
+        [book.ISBN, book.Author, book.Title, book.PublicationYear, book.Description],
         (err: unknown) => {
           if (err) return reject(err);
           resolve(book);
