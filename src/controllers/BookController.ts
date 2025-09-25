@@ -30,14 +30,19 @@ export class BookController {
         author,
         ISBN,
         publicationYear: Number(publicationYear),
-        description: description || ""
+        description: description || "",
       });
       // After successful add, re-fetch books and render
       const books = await this.bookService.getAllBooks();
       res.render("books", { books });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const books = await this.bookService.getAllBooks();
-      if (error.code === "SQLITE_CONSTRAINT") {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "SQLITE_CONSTRAINT"
+      ) {
         res.status(409).render("books", { books, errors: ["ISBN must be unique"] });
       } else {
         res.status(500).render("books", { books, errors: ["Error adding book"] });
