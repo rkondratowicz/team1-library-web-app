@@ -40,4 +40,8 @@ export class BookService {
   async searchBooks(searchTerm: string): Promise<Book[]> {
     return await this.bookRepository.searchBooks(searchTerm);
   }
+  
+  async deleteBook(isbn: string): Promise<void> {
+    await this.bookRepository.delete(isbn);
+  }
 }

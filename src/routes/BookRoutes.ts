@@ -14,5 +14,8 @@ export function createBookRoutes(bookController: BookController): Router {
   // Edit existing book
   router.post("/books/edit", (req, res) => bookController.editBook(req, res));
 
+  // Delete book
+  router.post("/books/delete", (req, res) => bookController.deleteBook(req, res));
+
   return router;
 }
