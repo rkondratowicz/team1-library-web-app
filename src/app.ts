@@ -24,11 +24,11 @@ app.set("views", path.join(process.cwd(), "views"));
 app.use(express.static(path.join(process.cwd(), "public")));
 
 const bookRepository = new BookRepository();
-const bookService = new BookService(bookRepository);
-const bookController = new BookController(bookService);
+const bookService = new BookService();
+const bookController = new BookController();
 
-const _memberRepository = new MemberRepository();
-const _memberService = new MemberService();
+// const _memberRepository = new MemberRepository();
+// const _memberService = new MemberService();
 const memberController = new MemberController();
 
 app.use("/api", createBookRoutes(bookController));

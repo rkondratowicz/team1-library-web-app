@@ -58,6 +58,23 @@ export class MemberRepository {
     });
   }
 
+  rentBook(memberID:number,bookID:number):Promise<void>{
+    return new Promise((resolve,reject)=>{
+        const sql=`INSERT INTO rentals (memberID,bookISBN)VALUES(?,?)`;
+        this.db.run(sql,
+            [
+                memberID,
+                bookID
+            ],
+            function(this:sqlite3.RunResult,err:Error|null){
+                if(err) return reject(err);
+                resolve();
+            }
+        )
+        this.db.run(`UPDATE books SET available=available-1 WHERE ISBN=?`,[bookID])
+    })
+  }
+
   create(member: CreateMemberRequest): Promise<number> {
     return new Promise((resolve, reject) => {
       const sql = `

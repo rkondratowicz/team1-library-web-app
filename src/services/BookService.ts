@@ -1,11 +1,11 @@
 import type { Book } from "../models/Book.js";
-import type { BookRepository } from "../repositories/BookRepository.js";
+import  { BookRepository } from "../repositories/BookRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;
 
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
+  constructor() {
+    this.bookRepository = new BookRepository();
   }
 
   async getAllBooks(): Promise<Book[]> {
@@ -16,6 +16,19 @@ export class BookService {
     return await this.bookRepository.findByTitle(title);
   }
 
+  async bookAvailable(bookTitle: string): Promise<boolean> {
+    const book = await this.bookRepository.findByTitle(bookTitle);
+    let status:boolean=false;
+    if(book?.available!=undefined){
+        if(book.available>0){
+            status= true;
+        }
+        else{
+          status= false;
+        }
+    }
+    return status;
+  }
   async addBook(book: Book): Promise<Book> {
     return await this.bookRepository.create(book);
   }

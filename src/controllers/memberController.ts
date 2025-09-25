@@ -1,12 +1,59 @@
 import type { Request, Response } from "express";
 import type { CreateMemberRequest } from "../models/member.js";
 import { MemberService } from "../services/memberService.js";
+import { BookService } from "../services/BookService.js";
+import { error } from "node:console";
 
 export class MemberController {
   private memberService: MemberService;
+  private bookService: BookService;
 
   constructor() {
     this.memberService = new MemberService();
+    this.bookService = new BookService();
+  }
+
+  async rentBook(req:Request,res:Response):Promise<void>{
+    try{
+        console.log("Rent book request received");
+        console.log("Member ID:", req.params.id, "Book Title:", req.params.bookTitle);
+        
+        const memberId=parseInt(req.params.id,10);
+        const bookTitle=req.params.bookTitle;
+        if(Number.isNaN(memberId)){
+            res.status(400).json({error:"Invalid member ID"});
+            return;
+        }
+        
+        // First check if the book exists
+        const book = await this.bookService.getBookByTitle(bookTitle);
+        if(book === undefined){
+            console.log("Book not found:", bookTitle);
+            res.status(404).json({error:`Book with title '${bookTitle}' not found`});
+            return;
+        }
+        
+        const available = await this.bookService.bookAvailable(bookTitle);
+        console.log("Book availability check:", available, "for book:", bookTitle);
+        
+        if(!available){
+            res.status(400).json({error:"Book is not available for rent"});
+            return;
+        }
+        
+        let bookID:number;
+        bookID=book.ISBN;
+        const result = await this.memberService.rentBook(memberId,bookID);
+        if(result.success){
+            res.status(200).json({success:true,message:result.message});
+            return;
+        }else{
+            res.status(400).json({error:result.message});
+            return;
+        }
+    }catch(err:Error|unknown){
+        console.error("Error renting book:",err);
+    }
   }
 
   // GET /api/members/search?q=query
