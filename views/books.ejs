@@ -75,20 +75,6 @@
             </div>
         </div>
 
-        <!-- Debug Section (Temporary) -->
-        <div class="alert alert-info mb-4">
-            <div class="flex justify-between items-center w-full">
-                <div>
-                    <h3 class="font-bold">Debug: Genre Loading</h3>
-                    <div class="text-xs">Check console for detailed logs</div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="loadGenres()" class="btn btn-sm btn-primary">Test Load Genres</button>
-                    <button onclick="debugShowGenres()" class="btn btn-sm btn-secondary">Show Current Genres</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="stat bg-primary text-primary-content rounded-box shadow-lg">
@@ -263,78 +249,51 @@
                     <textarea id="description" name="Description" class="textarea textarea-bordered focus:textarea-primary h-24" placeholder="Enter book description..."></textarea>
                 </div>
 
+                <!-- Genre Selection -->
                 <div class="form-control">
-                    <label class="label" for="genres">
-                        <span class="label-text font-semibold text-lg">
-                            <i class="fas fa-tags mr-3 text-primary"></i>Genres
+                    <label class="label">
+                        <span class="label-text font-semibold">
+                            <i class="fas fa-tags mr-2 text-primary"></i>Genres
                         </span>
                     </label>
-                    <div class="space-y-6">
-                        <!-- Selected Genres Section -->
-                        <div class="bg-base-50 rounded-xl p-6 border border-base-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-base font-semibold text-base-content flex items-center">
-                                    <i class="fas fa-check-circle mr-2 text-success"></i>Selected Genres
-                                </h4>
-                                <div class="text-xs text-base-content/60 font-medium" id="genreCount">0 selected</div>
-                            </div>
-                            <div class="flex flex-wrap gap-3 min-h-[3rem]" id="selectedGenresContainer">
-                                <div class="text-base-content/50 text-sm flex items-center justify-center w-full py-4" id="genresPlaceholder">
-                                    <i class="fas fa-info-circle mr-2"></i>No genres selected yet
-                                </div>
+                    <div class="space-y-3">
+                        <!-- Genre Input -->
+                        <div class="join w-full genre-input-section">
+                            <input type="text" 
+                                   id="genreInput" 
+                                   class="input input-bordered join-item flex-1 focus:input-primary" 
+                                   placeholder="Type a genre (e.g., Fiction, Mystery, Romance)..."
+                                   maxlength="50">
+                            <button type="button" 
+                                    id="addGenreBtn" 
+                                    class="btn btn-secondary join-item" 
+                                    title="Add genre to book">
+                                <i class="fas fa-plus mr-1"></i>Add
+                            </button>
+                        </div>
+                        
+                        <!-- Selected Genres Display -->
+                        <div class="min-h-[40px] p-3 border-2 border-base-300 rounded-lg bg-base-50">
+                            <div id="selectedGenres" class="flex flex-wrap gap-2">
+                                <span class="text-sm text-base-content/60 italic" id="noGenresText">No genres selected</span>
                             </div>
                         </div>
                         
-                        <!-- Genre Selection Section -->
-                        <div class="bg-white rounded-xl border border-base-300 overflow-hidden">
-                            <div class="bg-base-100 px-6 py-4 border-b border-base-300">
-                                <h4 class="text-base font-semibold text-base-content flex items-center">
-                                    <i class="fas fa-list mr-2 text-primary"></i>Available Genres
-                                </h4>
-                                <p class="text-sm text-base-content/60 mt-1">Click to add genres or create new ones</p>
+                        <!-- Available Genres (populated via API) -->
+                        <div class="collapse collapse-arrow bg-base-200">
+                            <input type="checkbox" />
+                            <div class="collapse-title text-sm font-medium">
+                                <i class="fas fa-list mr-2"></i>Choose from existing genres
                             </div>
-                            
-                            <div class="dropdown w-full" id="genreDropdownContainer">
-                                <div tabindex="0" role="button" class="btn btn-outline w-full justify-between m-4 mb-0 mx-6" style="width: calc(100% - 3rem);" id="genreDropdownBtn">
-                                    <span><i class="fas fa-plus mr-2"></i>Browse & Add Genres</span>
-                                    <i class="fas fa-chevron-down transition-transform duration-200" id="chevronIcon"></i>
-                                </div>
-                                <div tabindex="0" class="dropdown-content z-[1] bg-white rounded-lg shadow-xl border border-base-300 mx-6 mb-4 mt-2 overflow-hidden" style="width: calc(100% - 3rem);">
-                                    <!-- Header with close button -->
-                                    <div class="flex justify-between items-center px-4 py-3 bg-primary text-primary-content">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-search mr-2"></i>
-                                            <span class="font-medium">Add Genres</span>
-                                        </div>
-                                        <button type="button" class="btn btn-ghost btn-sm text-primary-content hover:bg-primary-focus" onclick="closeGenreDropdown(false)" title="Close genre selection">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Custom genre input -->
-                                    <div class="p-4 bg-base-50 border-b border-base-200">
-                                        <label class="text-sm font-medium text-base-content/80 mb-2 block">Create New Genre:</label>
-                                        <input type="text" id="customGenreInput" placeholder="Type genre name and press Enter..." class="input input-bordered w-full">
-                                    </div>
-                                    
-                                    <!-- Available genres list -->
-                                    <div class="max-h-60 overflow-y-auto bg-white">
-                                        <div class="p-3 bg-base-100 border-b border-base-200">
-                                            <div class="text-sm font-medium text-base-content/80">Choose from existing genres:</div>
-                                        </div>
-                                        <div id="genresList" class="p-2">
-                                            <div class="text-center py-8 text-base-content/50">
-                                                <span class="loading loading-spinner loading-md mb-2"></span>
-                                                <div>Loading genres...</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div class="collapse-content">
+                                <div id="availableGenres" class="flex flex-wrap gap-2 pt-2">
+                                    <!-- Will be populated via JavaScript -->
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Hidden input to store selected genres -->
-                    <input type="hidden" name="genres" id="genresInput">
+                    <!-- Hidden inputs for genres -->
+                    <div id="genreInputs"></div>
                 </div>
 
                 <div class="modal-action">
@@ -411,78 +370,51 @@
                     <textarea id="editDescription" name="Description" class="textarea textarea-bordered focus:textarea-primary h-24" placeholder="Enter book description..."></textarea>
                 </div>
 
+                <!-- Genre Selection for Edit -->
                 <div class="form-control">
-                    <label class="label" for="editGenres">
-                        <span class="label-text font-semibold text-lg">
-                            <i class="fas fa-tags mr-3 text-primary"></i>Genres
+                    <label class="label">
+                        <span class="label-text font-semibold">
+                            <i class="fas fa-tags mr-2 text-primary"></i>Genres
                         </span>
                     </label>
-                    <div class="space-y-6">
-                        <!-- Selected Genres Section -->
-                        <div class="bg-base-50 rounded-xl p-6 border border-base-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-base font-semibold text-base-content flex items-center">
-                                    <i class="fas fa-check-circle mr-2 text-success"></i>Selected Genres
-                                </h4>
-                                <div class="text-xs text-base-content/60 font-medium" id="editGenreCount">0 selected</div>
-                            </div>
-                            <div class="flex flex-wrap gap-3 min-h-[3rem]" id="editSelectedGenresContainer">
-                                <div class="text-base-content/50 text-sm flex items-center justify-center w-full py-4" id="editGenresPlaceholder">
-                                    <i class="fas fa-info-circle mr-2"></i>No genres selected yet
-                                </div>
+                    <div class="space-y-3">
+                        <!-- Genre Input -->
+                        <div class="join w-full genre-input-section">
+                            <input type="text" 
+                                   id="editGenreInput" 
+                                   class="input input-bordered join-item flex-1 focus:input-primary" 
+                                   placeholder="Type a genre (e.g., Fiction, Mystery, Romance)..."
+                                   maxlength="50">
+                            <button type="button" 
+                                    id="addEditGenreBtn" 
+                                    class="btn btn-secondary join-item" 
+                                    title="Add genre to book">
+                                <i class="fas fa-plus mr-1"></i>Add
+                            </button>
+                        </div>
+                        
+                        <!-- Selected Genres Display -->
+                        <div class="min-h-[40px] p-3 border-2 border-base-300 rounded-lg bg-base-50">
+                            <div id="editSelectedGenres" class="flex flex-wrap gap-2">
+                                <span class="text-sm text-base-content/60 italic" id="editNoGenresText">No genres selected</span>
                             </div>
                         </div>
                         
-                        <!-- Genre Selection Section -->
-                        <div class="bg-white rounded-xl border border-base-300 overflow-hidden">
-                            <div class="bg-base-100 px-6 py-4 border-b border-base-300">
-                                <h4 class="text-base font-semibold text-base-content flex items-center">
-                                    <i class="fas fa-list mr-2 text-primary"></i>Available Genres
-                                </h4>
-                                <p class="text-sm text-base-content/60 mt-1">Click to add genres or create new ones</p>
+                        <!-- Available Genres (populated via API) -->
+                        <div class="collapse collapse-arrow bg-base-200">
+                            <input type="checkbox" />
+                            <div class="collapse-title text-sm font-medium">
+                                <i class="fas fa-list mr-2"></i>Choose from existing genres
                             </div>
-                            
-                            <div class="dropdown w-full" id="editGenreDropdownContainer">
-                                <div tabindex="0" role="button" class="btn btn-outline w-full justify-between m-4 mb-0 mx-6" style="width: calc(100% - 3rem);" id="editGenreDropdownBtn">
-                                    <span><i class="fas fa-plus mr-2"></i>Browse & Add Genres</span>
-                                    <i class="fas fa-chevron-down transition-transform duration-200" id="editChevronIcon"></i>
-                                </div>
-                                <div tabindex="0" class="dropdown-content z-[1] bg-white rounded-lg shadow-xl border border-base-300 mx-6 mb-4 mt-2 overflow-hidden" style="width: calc(100% - 3rem);">
-                                    <!-- Header with close button -->
-                                    <div class="flex justify-between items-center px-4 py-3 bg-primary text-primary-content">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-search mr-2"></i>
-                                            <span class="font-medium">Add Genres</span>
-                                        </div>
-                                        <button type="button" class="btn btn-ghost btn-sm text-primary-content hover:bg-primary-focus" onclick="closeGenreDropdown(true)" title="Close genre selection">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Custom genre input -->
-                                    <div class="p-4 bg-base-50 border-b border-base-200">
-                                        <label class="text-sm font-medium text-base-content/80 mb-2 block">Create New Genre:</label>
-                                        <input type="text" id="editCustomGenreInput" placeholder="Type genre name and press Enter..." class="input input-bordered w-full">
-                                    </div>
-                                    
-                                    <!-- Available genres list -->
-                                    <div class="max-h-60 overflow-y-auto bg-white">
-                                        <div class="p-3 bg-base-100 border-b border-base-200">
-                                            <div class="text-sm font-medium text-base-content/80">Choose from existing genres:</div>
-                                        </div>
-                                        <div id="editGenresList" class="p-2">
-                                            <div class="text-center py-8 text-base-content/50">
-                                                <span class="loading loading-spinner loading-md mb-2"></span>
-                                                <div>Loading genres...</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div class="collapse-content">
+                                <div id="editAvailableGenres" class="flex flex-wrap gap-2 pt-2">
+                                    <!-- Will be populated via JavaScript -->
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- Hidden input to store selected genres -->
-                    <input type="hidden" name="genres" id="editGenresInput">
+                    <!-- Hidden inputs for genres -->
+                    <div id="editGenreInputs"></div>
                 </div>
 
                 <div class="modal-action">
@@ -824,6 +756,27 @@
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Genre Animation Styles */
+        .genre-badge-animated {
+            animation: genreSlideIn 0.3s ease-out;
+        }
+
+        @keyframes genreSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .genre-input-section:focus-within .input {
+            border-color: hsl(var(--p));
+            box-shadow: 0 0 0 2px hsl(var(--p) / 0.2);
+        }
     </style>
 
     <script>
@@ -831,9 +784,6 @@
         let allBooks = [];
         let filteredBooks = [];
         let currentView = 'card';
-        let allGenres = [];
-        let selectedGenres = []; // For add modal
-        let editSelectedGenres = []; // For edit modal
 
         // DOM Elements
         const searchInput = document.getElementById('searchBooks');
@@ -860,22 +810,7 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded');
-            console.log('Modal elements check:');
-            console.log('addBookModal:', addBookModal);
-            console.log('editBookModal:', editBookModal);
-            console.log('deleteBookModal:', deleteBookModal);
-            console.log('bookDetailsModal:', bookDetailsModal);
-            
-            // Check genre containers
-            console.log('Genre containers check:');
-            console.log('selectedGenresContainer:', document.getElementById('selectedGenresContainer'));
-            console.log('editSelectedGenresContainer:', document.getElementById('editSelectedGenresContainer'));
-            console.log('genresList:', document.getElementById('genresList'));
-            console.log('editGenresList:', document.getElementById('editGenresList'));
-            
             loadBooks();
-            loadGenres();
             setupEventListeners();
         });
 
@@ -894,34 +829,11 @@
 
             // Modal controls
             openAddBookModalBtn.addEventListener('click', () => {
-                console.log('Add book modal opening...');
-                clearGenreSelections(false);
                 addBookModal.showModal();
-                
-                // Show current allGenres state
-                console.log('Current allGenres state:', allGenres);
-                
-                // Force reload genres if empty
-                if (!allGenres || allGenres.length === 0) {
-                    console.log('No genres found, reloading...');
-                    loadGenres();
-                }
-                
-                // Ensure genres are populated after modal is shown
-                setTimeout(() => {
-                    console.log('Populating genres after modal open...');
-                    populateGenreDropdowns();
-                    updateAvailableGenres(false);
-                }, 100);
+                loadGenres('add'); // Load genres when opening add modal
             });
             closeAddBookModalBtns.forEach(btn => btn.addEventListener('click', () => addBookModal.close()));
             closeEditBookModalBtns.forEach(btn => btn.addEventListener('click', () => editBookModal.close()));
-
-            // Setup custom genre inputs
-            setupCustomGenreInputs();
-            
-            // Setup dropdown toggle animations
-            setupDropdownToggle();
 
             // Generate ISBN
             generateISBNBtn.addEventListener('click', generateRandomISBN);
@@ -929,33 +841,29 @@
             // Delete confirmation
             confirmDeleteBtn.addEventListener('click', confirmDelete);
 
+            // Genre management for Add form
+            setupGenreManagement('add');
+            // Genre management for Edit form  
+            setupGenreManagement('edit');
+
             // Event delegation for dynamically created buttons
             document.body.addEventListener('click', function(e) {
-                console.log('Click detected on element:', e.target);
-                console.log('Element classes:', e.target.className);
-                console.log('Closest edit-book-btn:', e.target.closest('.edit-book-btn'));
-                console.log('Closest delete-book-btn:', e.target.closest('.delete-book-btn'));
-                
                 // Handle delete button clicks FIRST (highest priority)
                 if (e.target.closest('.delete-book-btn')) {
-                    console.log('Delete button clicked');
                     e.preventDefault();
                     e.stopPropagation();
                     const btn = e.target.closest('.delete-book-btn');
                     const isbn = btn.getAttribute('data-isbn');
-                    console.log('ISBN to delete:', isbn);
                     deleteBook(isbn);
                     return; // Exit early to prevent other handlers
                 }
                 
                 // Handle edit button clicks SECOND (highest priority)
                 if (e.target.closest('.edit-book-btn')) {
-                    console.log('Edit button clicked');
                     e.preventDefault();
                     e.stopPropagation();
                     const btn = e.target.closest('.edit-book-btn');
                     const isbn = btn.getAttribute('data-isbn');
-                    console.log('ISBN to edit:', isbn);
                     editBook(isbn);
                     return; // Exit early to prevent other handlers
                 }
@@ -967,7 +875,6 @@
                         e.preventDefault();
                         const card = e.target.closest('.book-card-clickable');
                         const isbn = card.getAttribute('data-isbn');
-                        console.log('Card clicked for book details:', isbn);
                         showBookDetails(isbn);
                     }
                 }
@@ -978,11 +885,198 @@
                         e.preventDefault();
                         const row = e.target.closest('.table-row-clickable');
                         const isbn = row.getAttribute('data-isbn');
-                        console.log('Table row clicked for book details:', isbn);
                         showBookDetails(isbn);
                     }
                 }
             });
+        }
+
+        // Genre Management Functions
+        function setupGenreManagement(mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const genreInput = document.getElementById(prefix + 'GenreInput');
+            const addGenreBtn = document.getElementById(mode === 'edit' ? 'addEditGenreBtn' : 'addGenreBtn');
+            
+            if (genreInput && addGenreBtn) {
+                // Handle Enter key in genre input
+                genreInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addGenre(mode);
+                    }
+                });
+
+                // Handle add button click
+                addGenreBtn.addEventListener('click', function() {
+                    addGenre(mode);
+                });
+            }
+        }
+
+        function addGenre(mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const genreInput = document.getElementById(prefix + 'GenreInput');
+            const genreName = genreInput.value.trim();
+            
+            if (!genreName) return;
+            
+            // Check if genre already exists
+            const existingGenres = getSelectedGenres(mode);
+            if (existingGenres.includes(genreName)) {
+                // Show a brief visual feedback
+                genreInput.classList.add('input-warning');
+                setTimeout(() => genreInput.classList.remove('input-warning'), 1000);
+                return;
+            }
+            
+            // Add the genre
+            displayGenre(genreName, mode);
+            updateGenreInputs(mode);
+            
+            // Clear input
+            genreInput.value = '';
+            genreInput.focus();
+        }
+
+        function displayGenre(genreName, mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'SelectedGenres');
+            const noGenresText = document.getElementById(prefix + 'NoGenresText');
+            
+            // Hide "no genres" text
+            if (noGenresText) {
+                noGenresText.style.display = 'none';
+            }
+            
+            // Create genre badge with animation
+            const genreBadge = document.createElement('span');
+            genreBadge.className = 'badge badge-secondary gap-2 genre-badge-animated';
+            genreBadge.innerHTML = `
+                ${genreName}
+                <button type="button" class="btn btn-ghost btn-xs genre-remove-btn" onclick="removeGenre('${genreName}', '${mode}')" title="Remove ${genreName}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(genreBadge);
+        }
+
+        function removeGenre(genreName, mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'SelectedGenres');
+            const noGenresText = document.getElementById(prefix + 'NoGenresText');
+            
+            // Find and remove the badge
+            const badges = container.querySelectorAll('.badge');
+            badges.forEach(badge => {
+                if (badge.textContent.trim().startsWith(genreName)) {
+                    badge.remove();
+                }
+            });
+            
+            // Show "no genres" text if no genres left
+            const remainingBadges = container.querySelectorAll('.badge');
+            if (remainingBadges.length === 0 && noGenresText) {
+                noGenresText.style.display = 'inline';
+            }
+            
+            updateGenreInputs(mode);
+        }
+
+        function getSelectedGenres(mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'SelectedGenres');
+            const badges = container.querySelectorAll('.badge');
+            
+            return Array.from(badges).map(badge => {
+                return badge.textContent.trim().split('\n')[0].trim();
+            }).filter(genre => genre && genre !== 'No genres selected');
+        }
+
+        function updateGenreInputs(mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'GenreInputs');
+            const genres = getSelectedGenres(mode);
+            
+            // Clear existing inputs
+            container.innerHTML = '';
+            
+            // Add hidden inputs for each genre
+            genres.forEach(genre => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'genres';
+                input.value = genre;
+                container.appendChild(input);
+            });
+        }
+
+        function clearGenres(mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'SelectedGenres');
+            const noGenresText = document.getElementById(prefix + 'NoGenresText');
+            
+            // Remove all badges
+            container.querySelectorAll('.badge').forEach(badge => badge.remove());
+            
+            // Show "no genres" text
+            if (noGenresText) {
+                noGenresText.style.display = 'inline';
+            }
+            
+            updateGenreInputs(mode);
+        }
+
+        function setGenres(genres, mode) {
+            // Clear existing genres
+            clearGenres(mode);
+            
+            // Add each genre
+            if (genres && genres.length > 0) {
+                genres.forEach(genre => {
+                    displayGenre(genre, mode);
+                });
+                updateGenreInputs(mode);
+            }
+        }
+
+        async function loadGenres(mode) {
+            try {
+                const response = await fetch('/api/genres');
+                if (response.ok) {
+                    const result = await response.json();
+                    const genres = result.data || [];
+                    displayAvailableGenres(genres, mode);
+                }
+            } catch (error) {
+                console.error('Error loading genres:', error);
+            }
+        }
+
+        function displayAvailableGenres(genres, mode) {
+            const prefix = mode === 'edit' ? 'edit' : '';
+            const container = document.getElementById(prefix + 'AvailableGenres');
+            
+            if (!genres || genres.length === 0) {
+                container.innerHTML = '<span class="text-sm text-base-content/60 italic">No existing genres found</span>';
+                return;
+            }
+            
+            container.innerHTML = genres.map(genre => `
+                <button type="button" 
+                        class="btn btn-outline btn-xs" 
+                        onclick="addExistingGenre('${genre.Genre}', '${mode}')">
+                    ${genre.Genre}
+                </button>
+            `).join('');
+        }
+
+        function addExistingGenre(genreName, mode) {
+            const existingGenres = getSelectedGenres(mode);
+            if (!existingGenres.includes(genreName)) {
+                displayGenre(genreName, mode);
+                updateGenreInputs(mode);
+            }
         }
 
         async function loadBooks() {
@@ -1226,9 +1320,7 @@
         }
 
         function editBook(isbn) {
-            console.log('editBook called with ISBN:', isbn);
             const book = allBooks.find(b => b.ISBN === isbn);
-            console.log('Found book:', book);
             
             if (book) {
                 document.getElementById('editTitle').value = book.Title;
@@ -1237,46 +1329,18 @@
                 document.getElementById('editDescription').value = book.Description || '';
                 document.getElementById('editISBN').value = book.ISBN;
                 
-                console.log('About to show edit modal...');
-                console.log('Current allGenres state before edit:', allGenres);
-                console.log('Book genres:', book.genres);
+                // Load genres and set current book's genres
+                loadGenres('edit');
+                setGenres(book.genres || [], 'edit');
                 
-                // Force reload genres if empty before opening modal
-                if (!allGenres || allGenres.length === 0) {
-                    console.log('No genres loaded, loading them first...');
-                    loadGenres().then(() => {
-                        console.log('Genres loaded, now opening edit modal');
-                        editBookModal.showModal();
-                        setTimeout(() => {
-                            populateGenreDropdowns();
-                            setEditGenres(book.genres || []);
-                        }, 100);
-                    });
-                } else {
-                    editBookModal.showModal();
-                    
-                    // Ensure dropdowns are populated and set genres after modal is shown
-                    setTimeout(() => {
-                        console.log('Populating edit genres with loaded genres');
-                        populateGenreDropdowns();
-                        setEditGenres(book.genres || []);
-                    }, 100);
-                }
-                console.log('Edit modal should now be visible');
-            } else {
-                console.error('Book not found with ISBN:', isbn);
+                editBookModal.showModal();
             }
         }
 
         function deleteBook(isbn) {
-            console.log('deleteBook called with ISBN:', isbn);
-            console.log('allBooks:', allBooks);
-            
             const book = allBooks.find(b => b.ISBN == isbn);
-            console.log('Found book:', book);
             
             if (!book) {
-                console.error('Book not found with ISBN:', isbn);
                 return;
             }
 
@@ -1296,7 +1360,6 @@
             const book = allBooks.find(b => b.ISBN == isbn);
             
             if (book) {
-                console.log('User confirmed deletion, creating form...');
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/api/books/delete';
@@ -1309,7 +1372,6 @@
                 form.appendChild(isbnInput);
                 
                 document.body.appendChild(form);
-                console.log('Submitting form...');
                 form.submit();
             }
             
@@ -1489,355 +1551,6 @@
             
             timelineHTML += '</div>';
             timelineContainer.innerHTML = timelineHTML;
-        }
-
-        // Load all genres from API
-        async function loadGenres() {
-            try {
-                console.log('Loading genres from /api/genres...');
-                const response = await fetch('/api/genres');
-                console.log('Genres API response:', response);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Genres API data:', data);
-                    allGenres = data.data || [];
-                    console.log('Loaded genres into allGenres:', allGenres);
-                    
-                    // Show success message in UI temporarily
-                    if (allGenres.length > 0) {
-                        const genresList = document.getElementById('genresList');
-                        if (genresList) {
-                            genresList.innerHTML = `<div class="text-green-600 p-2">✅ Loaded ${allGenres.length} genres successfully!</div>`;
-                        }
-                    }
-                    
-                    populateGenreDropdowns();
-                    return true; // Success
-                } else {
-                    console.error('Failed to load genres, response not ok:', response.status, response.statusText);
-                    const genresList = document.getElementById('genresList');
-                    if (genresList) {
-                        genresList.innerHTML = `<div class="text-red-600 p-2">❌ Failed to load genres: ${response.status}</div>`;
-                    }
-                    return false; // Failure
-                }
-            } catch (error) {
-                console.error('Error loading genres:', error);
-                const genresList = document.getElementById('genresList');
-                if (genresList) {
-                    genresList.innerHTML = `<div class="text-red-600 p-2">❌ Network error: ${error.message}</div>`;
-                }
-                return false; // Failure
-            }
-        }
-
-        // Debug function to show current genres
-        function debugShowGenres() {
-            console.log('=== GENRE DEBUG INFO ===');
-            console.log('allGenres:', allGenres);
-            console.log('allGenres.length:', allGenres ? allGenres.length : 'undefined');
-            console.log('selectedGenres:', selectedGenres);
-            console.log('editSelectedGenres:', editSelectedGenres);
-            
-            // Also update the debug section UI
-            const debugSection = document.querySelector('.alert-info');
-            if (debugSection) {
-                const genreCount = allGenres ? allGenres.length : 0;
-                debugSection.querySelector('div').innerHTML = `
-                    <h3 class="font-bold">Debug: Genre Loading</h3>
-                    <div class="text-xs">Genres loaded: ${genreCount} | Check console for details</div>
-                `;
-            }
-        }
-
-        // Populate genre dropdowns
-        function populateGenreDropdowns() {
-            console.log('populateGenreDropdowns called, allGenres:', allGenres);
-            updateAvailableGenres(false); // Update add modal
-            updateAvailableGenres(true);  // Update edit modal
-        }
-
-        // Update available genres list (excluding already selected ones)
-        function updateAvailableGenres(isEdit = false) {
-            console.log('=== updateAvailableGenres START ===');
-            console.log('updateAvailableGenres called with isEdit:', isEdit);
-            console.log('allGenres:', allGenres);
-            console.log('allGenres.length:', allGenres ? allGenres.length : 'undefined');
-            console.log('selectedGenres:', selectedGenres);
-            console.log('editSelectedGenres:', editSelectedGenres);
-            
-            const genresList = isEdit ? document.getElementById('editGenresList') : document.getElementById('genresList');
-            const selectedGenresArray = isEdit ? editSelectedGenres : selectedGenres;
-            
-            console.log('Target element ID:', isEdit ? 'editGenresList' : 'genresList');
-            console.log('genresList element:', genresList);
-            console.log('selectedGenresArray:', selectedGenresArray);
-            
-            if (!genresList) {
-                console.error(`genresList not found for isEdit: ${isEdit}`);
-                console.log('Available elements with genre in ID:');
-                document.querySelectorAll('[id*="genre"]').forEach(el => {
-                    console.log('  - ID:', el.id, 'Element:', el);
-                });
-                return;
-            }
-            
-            if (!allGenres || allGenres.length === 0) {
-                console.log('No genres available, showing loading state');
-                genresList.innerHTML = `
-                    <div class="text-center py-8 text-base-content/50">
-                        <span class="loading loading-spinner loading-md mb-2"></span>
-                        <div>Loading genres...</div>
-                    </div>`;
-                return;
-            }
-            
-            // Filter out already selected genres
-            const availableGenres = allGenres.filter(genre => !selectedGenresArray.includes(genre.Genre));
-            
-            if (availableGenres.length === 0) {
-                genresList.innerHTML = `
-                    <div class="text-center py-8 px-4">
-                        <div class="text-success text-2xl mb-2">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="text-base-content/60 font-medium">All genres selected!</div>
-                        <div class="text-xs text-base-content/50 mt-1">Create a new genre using the input above</div>
-                    </div>`;
-                return;
-            }
-            
-            const genreItems = availableGenres.map(genre => 
-                `<div class="px-2 py-1">
-                    <button type="button" onclick="addGenre('${genre.Genre.replace(/'/g, "\\'")}', ${isEdit})" 
-                            class="w-full text-left px-3 py-2 rounded-lg hover:bg-primary hover:text-primary-content transition-all duration-200 flex items-center justify-between group">
-                        <span class="font-medium">${genre.Genre}</span>
-                        <i class="fas fa-plus text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
-                    </button>
-                </div>`
-            ).join('');
-            
-            genresList.innerHTML = genreItems;
-            console.log(`✅ Available genres updated for isEdit: ${isEdit}, count: ${availableGenres.length}`);
-            console.log('Generated HTML:', genreItems.substring(0, 200) + '...');
-            console.log('Element innerHTML set to:', genresList.innerHTML.substring(0, 200) + '...');
-            console.log('=== updateAvailableGenres END ===');
-        }
-
-        // Add genre to selection
-        function addGenre(genreName, isEdit = false) {
-            console.log('addGenre called:', { genreName, isEdit });
-            const targetArray = isEdit ? editSelectedGenres : selectedGenres;
-            console.log('Current target array:', targetArray);
-            
-            if (!targetArray.includes(genreName)) {
-                targetArray.push(genreName);
-                console.log('Genre added, new array:', targetArray);
-                updateGenreDisplay(isEdit);
-                updateGenreInput(isEdit);
-                updateAvailableGenres(isEdit); // Refresh available genres list
-                
-                // Clear custom input if used
-                const customInput = isEdit ? document.getElementById('editCustomGenreInput') : document.getElementById('customGenreInput');
-                if (customInput) customInput.value = '';
-            } else {
-                console.log('Genre already exists in selection');
-            }
-        }
-
-        // Remove genre from selection
-        function removeGenre(genreName, isEdit = false) {
-            console.log('removeGenre called:', { genreName, isEdit });
-            const targetArray = isEdit ? editSelectedGenres : selectedGenres;
-            const index = targetArray.indexOf(genreName);
-            if (index > -1) {
-                targetArray.splice(index, 1);
-                console.log('Genre removed, new array:', targetArray);
-                updateGenreDisplay(isEdit);
-                updateGenreInput(isEdit);
-                updateAvailableGenres(isEdit); // Refresh available genres list
-            }
-        }
-
-        // Close genre dropdown
-        function closeGenreDropdown(isEdit = false) {
-            console.log('closeGenreDropdown called with isEdit:', isEdit);
-            const dropdownBtn = isEdit ? document.getElementById('editGenreDropdownBtn') : document.getElementById('genreDropdownBtn');
-            const chevronIcon = isEdit ? document.getElementById('editChevronIcon') : document.getElementById('chevronIcon');
-            
-            if (dropdownBtn) {
-                dropdownBtn.blur(); // Remove focus to close dropdown
-                // Force close by removing active state
-                dropdownBtn.removeAttribute('open');
-                dropdownBtn.classList.remove('dropdown-open');
-                
-                // Reset chevron rotation
-                if (chevronIcon) {
-                    chevronIcon.style.transform = 'rotate(0deg)';
-                }
-                
-                console.log('Dropdown closed successfully');
-            } else {
-                console.warn('Dropdown button not found for isEdit:', isEdit);
-            }
-        }
-
-        // Toggle chevron rotation when dropdown opens/closes
-        function setupDropdownToggle() {
-            const setupDropdown = (btnId, chevronId) => {
-                const btn = document.getElementById(btnId);
-                const chevron = document.getElementById(chevronId);
-                
-                if (btn && chevron) {
-                    btn.addEventListener('click', function() {
-                        setTimeout(() => {
-                            const isOpen = this.matches(':focus');
-                            chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-                        }, 10);
-                    });
-                }
-            };
-            
-            setupDropdown('genreDropdownBtn', 'chevronIcon');
-            setupDropdown('editGenreDropdownBtn', 'editChevronIcon');
-        }
-
-        // Update genre display
-        function updateGenreDisplay(isEdit = false) {
-            console.log('updateGenreDisplay called:', { isEdit });
-            const targetArray = isEdit ? editSelectedGenres : selectedGenres;
-            const containerId = isEdit ? 'editSelectedGenresContainer' : 'selectedGenresContainer';
-            const placeholderId = isEdit ? 'editGenresPlaceholder' : 'genresPlaceholder';
-            
-            console.log('Looking for container:', containerId);
-            const container = document.getElementById(containerId);
-            
-            if (!container) {
-                console.warn(`Genre container not found: ${containerId}`);
-                return;
-            }
-            
-            console.log('Container found, targetArray:', targetArray);
-            
-            if (targetArray.length === 0) {
-                container.innerHTML = `<div class="text-base-content/50 text-sm flex items-center justify-center w-full py-4" id="${placeholderId}">
-                    <i class="fas fa-info-circle mr-2"></i>No genres selected yet
-                </div>`;
-            } else {
-                container.innerHTML = targetArray.map(genre => 
-                    `<span class="badge badge-primary gap-2 text-sm py-2 px-3 transition-all hover:badge-primary-focus hover:scale-105">
-                        <i class="fas fa-tag"></i>
-                        <span class="font-medium">${genre}</span>
-                        <button type="button" class="btn btn-ghost btn-xs hover:bg-error hover:text-error-content rounded-full ml-1" onclick="removeGenre('${genre.replace(/'/g, "\\'")}', ${isEdit})" title="Remove ${genre}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </span>`
-                ).join('');
-            }
-            
-            // Update genre count
-            const countElement = document.getElementById(isEdit ? 'editGenreCount' : 'genreCount');
-            if (countElement) {
-                countElement.textContent = `${targetArray.length} selected`;
-            }
-            console.log('Genre display updated successfully');
-        }
-
-        // Update hidden input with selected genres
-        function updateGenreInput(isEdit = false) {
-            const targetArray = isEdit ? editSelectedGenres : selectedGenres;
-            const inputId = isEdit ? 'editGenresInput' : 'genresInput';
-            
-            const input = document.getElementById(inputId);
-            if (!input) {
-                console.warn(`Genre input not found: ${inputId}`);
-                return;
-            }
-            input.value = targetArray.join(',');
-        }
-
-        // Handle custom genre input
-        function setupCustomGenreInputs() {
-            // Setup after a delay to ensure elements exist
-            setTimeout(() => {
-                const addCustomInput = document.getElementById('customGenreInput');
-                const editCustomInput = document.getElementById('editCustomGenreInput');
-                
-                if (addCustomInput) {
-                    addCustomInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const genreName = this.value.trim();
-                            if (genreName) {
-                                addGenre(genreName, false);
-                                this.value = '';
-                            }
-                        }
-                    });
-                    
-                    addCustomInput.addEventListener('input', function() {
-                        // Show a hint about pressing Enter
-                        const hint = this.parentElement.querySelector('.genre-hint');
-                        if (this.value.trim() && !hint) {
-                            const hintDiv = document.createElement('div');
-                            hintDiv.className = 'genre-hint text-xs text-base-content/60 mt-1';
-                            hintDiv.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Press Enter to add';
-                            this.parentElement.appendChild(hintDiv);
-                        } else if (!this.value.trim() && hint) {
-                            hint.remove();
-                        }
-                    });
-                }
-                
-                if (editCustomInput) {
-                    editCustomInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const genreName = this.value.trim();
-                            if (genreName) {
-                                addGenre(genreName, true);
-                                this.value = '';
-                            }
-                        }
-                    });
-                    
-                    editCustomInput.addEventListener('input', function() {
-                        // Show a hint about pressing Enter
-                        const hint = this.parentElement.querySelector('.genre-hint');
-                        if (this.value.trim() && !hint) {
-                            const hintDiv = document.createElement('div');
-                            hintDiv.className = 'genre-hint text-xs text-base-content/60 mt-1';
-                            hintDiv.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Press Enter to add';
-                            this.parentElement.appendChild(hintDiv);
-                        } else if (!this.value.trim() && hint) {
-                            hint.remove();
-                        }
-                    });
-                }
-            }, 100);
-        }
-
-        // Clear genre selections
-        function clearGenreSelections(isEdit = false) {
-            if (isEdit) {
-                editSelectedGenres = [];
-            } else {
-                selectedGenres = [];
-            }
-            updateGenreDisplay(isEdit);
-            updateGenreInput(isEdit);
-            updateAvailableGenres(isEdit);
-        }
-
-        // Set genres for editing
-        function setEditGenres(genres) {
-            console.log('setEditGenres called with:', genres);
-            editSelectedGenres = genres || [];
-            console.log('editSelectedGenres set to:', editSelectedGenres);
-            updateGenreDisplay(true);
-            updateGenreInput(true);
-            updateAvailableGenres(true);
         }
 
         // Utility function for debouncing
