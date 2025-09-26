@@ -42,6 +42,13 @@ export class MemberService {
     if (!member) {
       return { success: false, message: "Member not found" };
     }
+
+    // Check if member has reached the 3-book rental limit
+    const currentRentals = await this.memberRepository.getMemberRentals(memberID);
+    if (currentRentals.length >= 3) {
+      return { success: false, message: "Member has reached the maximum rental limit of 3 books" };
+    }
+
     try {
       await this.memberRepository.rentBook(memberID, bookISBN);
       return { success: true, message: "Book rented successfully" };
@@ -49,6 +56,13 @@ export class MemberService {
       console.error("Error in rentBook service:", err);
       return { success: false, message: "Error renting book" };
     }
+  }
+
+  async getMemberRentals(memberID: number): Promise<any[]> {
+    if (!memberID || memberID <= 0) {
+      throw new Error("Invalid member ID");
+    }
+    return await this.memberRepository.getMemberRentals(memberID);
   }
 
   async createMember(memberData: CreateMemberRequest): Promise<Member> {

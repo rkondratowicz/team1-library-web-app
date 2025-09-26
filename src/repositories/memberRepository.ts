@@ -69,6 +69,21 @@ export class MemberRepository {
     });
   }
 
+  getMemberRentals(memberID: number): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT r.*, b.Title, b.Author, b.ISBN
+        FROM rentals r
+        JOIN books b ON r.bookISBN = b.ISBN
+        WHERE r.memberID = ? AND (r.returned IS NULL OR r.returned = 0)
+      `;
+      this.db.all(sql, [memberID], (err: unknown, rows: any[]) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+  }
+
   create(member: CreateMemberRequest): Promise<number> {
     return new Promise((resolve, reject) => {
       const sql = `
