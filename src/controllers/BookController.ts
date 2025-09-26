@@ -10,8 +10,10 @@ export class BookController {
   }
 
   async addBook(req: Request, res: Response): Promise<void> {
-    const { Title, Author, ISBN, PublicationYear, Description } = req.body;
+    const { Title, Author, ISBN, PublicationYear, Description, genres } = req.body;
     const errors: string[] = [];
+
+    console.log("Add Book Request Body:", req.body);
 
     if (!Title) errors.push("Title is required");
     if (!Author) errors.push("Author is required");
@@ -26,13 +28,34 @@ export class BookController {
     }
 
     try {
-      await this.bookService.addBook({
-        Title,
-        Author,
-        ISBN,
-        PublicationYear: Number(PublicationYear),
-        Description: Description || "",
-      });
+      // Parse genres if provided
+      let genreList: string[] = [];
+      if (genres) {
+        if (typeof genres === "string") {
+          // Single genre or comma-separated string
+          genreList = genres
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
+        } else if (Array.isArray(genres)) {
+          // Array of genres
+          genreList = genres.filter((g) => typeof g === "string" && g.trim().length > 0);
+        }
+      }
+
+      console.log("Processed genres:", genreList);
+
+      await this.bookService.addBook(
+        {
+          Title,
+          Author,
+          ISBN,
+          PublicationYear: Number(PublicationYear),
+          Description: Description || "",
+        },
+        genreList
+      );
+
       // After successful add, re-fetch books and render
       res.redirect("/books");
     } catch (error: unknown) {
@@ -45,6 +68,7 @@ export class BookController {
       ) {
         res.status(409).render("books", { books, errors: ["ISBN must be unique"] });
       } else {
+        console.error("Error adding book:", error);
         res.status(500).render("books", { books, errors: ["Error adding book"] });
       }
     }
@@ -87,7 +111,7 @@ export class BookController {
     }
   }
   async editBook(req: Request, res: Response): Promise<void> {
-    const { ISBN, Title, Author, PublicationYear, Description } = req.body;
+    const { ISBN, Title, Author, PublicationYear, Description, genres } = req.body;
     const errors: string[] = [];
 
     console.log("Edit Book Request Body:", req.body);
@@ -105,15 +129,37 @@ export class BookController {
     }
 
     try {
-      await this.bookService.editBook({
-        ISBN,
-        Title,
-        Author,
-        PublicationYear: Number(PublicationYear),
-        Description: Description || "",
-      });
+      // Parse genres if provided
+      let genreList: string[] = [];
+      if (genres) {
+        if (typeof genres === "string") {
+          // Single genre or comma-separated string
+          genreList = genres
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
+        } else if (Array.isArray(genres)) {
+          // Array of genres
+          genreList = genres.filter((g) => typeof g === "string" && g.trim().length > 0);
+        }
+      }
+
+      console.log("Processed genres for edit:", genreList);
+
+      await this.bookService.editBook(
+        {
+          ISBN,
+          Title,
+          Author,
+          PublicationYear: Number(PublicationYear),
+          Description: Description || "",
+        },
+        genreList
+      );
+
       res.redirect("/books");
-    } catch (_serror: unknown) {
+    } catch (error: unknown) {
+      console.error("Error editing book:", error);
       const books = await this.bookService.getAllBooks();
       res.status(500).render("books", { books, errors: ["Error editing book"] });
     }
@@ -165,6 +211,57 @@ export class BookController {
       res
         .status(500)
         .json({ success: false, message: "Error searching books", errors: [String(error)] });
+    }
+  }
+
+  async getBookDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const isbn = req.params.isbn;
+      console.log("BookController.getBookDetails called with ISBN:", isbn);
+
+      if (!isbn) {
+        res.status(400).json({ success: false, message: "ISBN is required" });
+        return;
+      }
+
+      const bookDetails = await this.bookService.getBookDetails(isbn);
+      console.log("BookDetails result:", bookDetails);
+
+      if (!bookDetails) {
+        res.status(404).json({ success: false, message: "Book not found" });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: bookDetails,
+        message: "Book details retrieved successfully",
+      });
+    } catch (error) {
+      console.error("Error in BookController.getBookDetails:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving book details",
+        errors: [String(error)],
+      });
+    }
+  }
+
+  async getAllGenres(_req: Request, res: Response): Promise<void> {
+    try {
+      const genres = await this.bookService.getAllGenres();
+      res.json({
+        success: true,
+        data: genres,
+        message: "Genres retrieved successfully",
+      });
+    } catch (error) {
+      console.error("Error in BookController.getAllGenres:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving genres",
+        errors: [String(error)],
+      });
     }
   }
 }

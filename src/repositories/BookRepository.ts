@@ -42,16 +42,28 @@ export class BookRepository {
       });
     });
   }
-  getRentals(): Promise<Book[]> {
+  getRentals(): Promise<RentalHistoryEntry[]> {
     return new Promise((resolve, reject) => {
       this.db.all(
-        `SELECT m.id,m.fname,m.Sname, m.email , b.ISBN,b.Title, b.Author 
-        FROM members as m 
-        JOIN rentals as r on m.id=r.memberID 
-        join books as b on r.bookISBN=b.ISBN order by r.rentalDate desc ;`,
-        (err: unknown, rows: Book[]) => {
+        `SELECT r.rentalID, r.memberID, r.bookISBN, r.returned, r.rentalDate, r.returnedDate,
+         (m.Fname || ' ' || m.Sname) as memberName, m.email as memberEmail
+        FROM rentals as r 
+        JOIN members as m ON r.memberID = m.id 
+        JOIN books as b ON r.bookISBN = b.ISBN 
+        ORDER BY r.rentalDate DESC`,
+        (err: unknown, rows: RentalHistoryRow[]) => {
           if (err) return reject(err);
-          resolve(rows);
+          const rentals: RentalHistoryEntry[] = rows.map((row) => ({
+            rentalID: row.rentalID,
+            memberID: row.memberID,
+            bookISBN: row.bookISBN,
+            returned: Boolean(row.returned),
+            rentalDate: row.RentalDate,
+            returnedDate: row.returnedDate,
+            memberName: row.memberName,
+            memberEmail: row.memberEmail,
+          }));
+          resolve(rentals);
         }
       );
     });
@@ -163,4 +175,324 @@ export class BookRepository {
       });
     });
   }
+
+  findRentalHistory(isbn: string): Promise<RentalHistoryEntry[]> {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          r.rentalID,
+          r.memberID,
+          r.bookISBN,
+          r.returned,
+          r.RentalDate,
+          r.returnedDate,
+          (m.Fname || ' ' || m.Sname) as memberName,
+          m.email as memberEmail
+        FROM rentals r
+        LEFT JOIN members m ON r.memberID = m.id
+        WHERE r.bookISBN = ?
+        ORDER BY r.RentalDate ASC
+      `;
+
+      console.log("Executing rental history query for ISBN:", isbn);
+      console.log("SQL:", sql);
+
+      this.db.all(sql, [isbn], (err: unknown, rows: RentalHistoryRow[]) => {
+        if (err) {
+          console.error("Database error in findRentalHistory:", err);
+          return reject(err);
+        }
+
+        console.log("Rental history query returned", rows?.length || 0, "rows");
+        console.log("Sample data:", rows?.[0]);
+
+        const rentalHistory: RentalHistoryEntry[] = rows.map((row) => ({
+          rentalID: row.rentalID,
+          memberID: row.memberID,
+          bookISBN: row.bookISBN,
+          returned: row.returned === 1,
+          rentalDate: row.RentalDate,
+          returnedDate: row.returnedDate,
+          memberName: row.memberName,
+          memberEmail: row.memberEmail,
+        }));
+
+        resolve(rentalHistory);
+      });
+    });
+  }
+
+  findByISBN(isbn: string): Promise<Book | undefined> {
+    return new Promise((resolve, reject) => {
+      console.log("Finding book by ISBN:", isbn);
+
+      this.db.get(
+        "SELECT * FROM books WHERE ISBN = ?",
+        [isbn],
+        (err: unknown, row: Book | undefined) => {
+          if (err) {
+            console.error("Database error in findByISBN:", err);
+            return reject(err);
+          }
+          if (!row) {
+            console.log("No book found with ISBN:", isbn);
+            resolve(undefined);
+            return;
+          }
+
+          console.log("Found book:", row);
+
+          // Get genres for this book
+          this.db.all(
+            `SELECT g.Genre 
+             FROM Genre g 
+             JOIN BookGenre bg ON g.GenreID = bg.GenreID 
+             WHERE bg.ISBN = ?`,
+            [row.ISBN],
+            (genreErr: unknown, genreRows: { Genre: string }[]) => {
+              if (genreErr) {
+                console.error("Database error getting genres:", genreErr);
+                return reject(genreErr);
+              }
+              console.log("Found genres for book:", genreRows);
+              row.genres = genreRows.map((genreRow) => genreRow.Genre);
+              resolve(row);
+            }
+          );
+        }
+      );
+    });
+  }
+
+  // Get all available genres
+  getAllGenres(): Promise<Genre[]> {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        "SELECT GenreID, Genre FROM Genre ORDER BY Genre ASC",
+        (err: unknown, rows: Genre[]) => {
+          if (err) return reject(err);
+          resolve(rows);
+        }
+      );
+    });
+  }
+
+  // Create book with genres
+  createWithGenres(book: Book, genreIds: number[]): Promise<Book> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION");
+
+        // First insert the book
+        this.db.run(
+          `INSERT INTO books (ISBN, Author, Title, PublicationYear, Description)
+           VALUES (?, ?, ?, ?, ?)`,
+          [book.ISBN, book.Author, book.Title, book.PublicationYear, book.Description],
+          (err: unknown) => {
+            if (err) {
+              this.db.run("ROLLBACK");
+              return reject(err);
+            }
+
+            // Then insert the genre associations
+            if (genreIds.length === 0) {
+              this.db.run("COMMIT");
+              return resolve(book);
+            }
+
+            let completed = 0;
+            let hasError = false;
+
+            for (const genreId of genreIds) {
+              this.db.run(
+                "INSERT INTO BookGenre (ISBN, GenreID) VALUES (?, ?)",
+                [book.ISBN, genreId],
+                (genreErr: unknown) => {
+                  if (genreErr && !hasError) {
+                    hasError = true;
+                    this.db.run("ROLLBACK");
+                    return reject(genreErr);
+                  }
+
+                  completed++;
+                  if (completed === genreIds.length && !hasError) {
+                    this.db.run("COMMIT");
+                    resolve(book);
+                  }
+                }
+              );
+            }
+          }
+        );
+      });
+    });
+  }
+
+  // Update book with genres
+  updateWithGenres(book: Book, genreIds: number[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION");
+
+        // First update the book
+        this.db.run(
+          `UPDATE Books SET Title = ?, Author = ?, PublicationYear = ?, Description = ? WHERE ISBN = ?`,
+          [book.Title, book.Author, book.PublicationYear, book.Description, book.ISBN],
+          (err: unknown) => {
+            if (err) {
+              this.db.run("ROLLBACK");
+              return reject(err);
+            }
+
+            // Delete existing genre associations
+            this.db.run(
+              "DELETE FROM BookGenre WHERE ISBN = ?",
+              [book.ISBN],
+              (deleteErr: unknown) => {
+                if (deleteErr) {
+                  this.db.run("ROLLBACK");
+                  return reject(deleteErr);
+                }
+
+                // Insert new genre associations
+                if (genreIds.length === 0) {
+                  this.db.run("COMMIT");
+                  return resolve();
+                }
+
+                let completed = 0;
+                let hasError = false;
+
+                for (const genreId of genreIds) {
+                  this.db.run(
+                    "INSERT INTO BookGenre (ISBN, GenreID) VALUES (?, ?)",
+                    [book.ISBN, genreId],
+                    (genreErr: unknown) => {
+                      if (genreErr && !hasError) {
+                        hasError = true;
+                        this.db.run("ROLLBACK");
+                        return reject(genreErr);
+                      }
+
+                      completed++;
+                      if (completed === genreIds.length && !hasError) {
+                        this.db.run("COMMIT");
+                        resolve();
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          }
+        );
+      });
+    });
+  }
+
+  // Delete book with cleanup
+  deleteWithCleanup(isbn: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION");
+
+        // First delete genre associations
+        this.db.run("DELETE FROM BookGenre WHERE ISBN = ?", [isbn], (genreErr: unknown) => {
+          if (genreErr) {
+            this.db.run("ROLLBACK");
+            return reject(genreErr);
+          }
+
+          // Then delete the book
+          this.db.run("DELETE FROM Books WHERE ISBN = ?", [isbn], (bookErr: unknown) => {
+            if (bookErr) {
+              this.db.run("ROLLBACK");
+              return reject(bookErr);
+            }
+
+            // Clean up orphaned genres (genres not associated with any books)
+            this.db.run(
+              `DELETE FROM Genre 
+                   WHERE GenreID NOT IN (
+                     SELECT DISTINCT GenreID FROM BookGenre
+                   )
+                   AND GenreID NOT IN (
+                     SELECT GenreID FROM Genre 
+                     WHERE Genre IN (
+                       'Fiction', 'Non-Fiction', 'Science Fiction', 'Fantasy', 
+                       'Mystery', 'Thriller', 'Romance', 'Horror', 'Biography', 
+                       'History', 'Philosophy', 'Science', 'Technology', 
+                       'Self-Help', 'Business', 'Health & Fitness'
+                     )
+                   )`,
+              (cleanupErr: unknown) => {
+                if (cleanupErr) {
+                  console.warn("Warning: Could not clean up orphaned genres:", cleanupErr);
+                }
+
+                this.db.run("COMMIT");
+                resolve();
+              }
+            );
+          });
+        });
+      });
+    });
+  }
+
+  // Find or create genre
+  findOrCreateGenre(genreName: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      // First try to find existing genre
+      this.db.get(
+        "SELECT GenreID FROM Genre WHERE Genre = ? COLLATE NOCASE",
+        [genreName.trim()],
+        (err: unknown, row: { GenreID: number } | undefined) => {
+          if (err) return reject(err);
+
+          if (row) {
+            resolve(row.GenreID);
+          } else {
+            // Create new genre
+            this.db.run(
+              "INSERT INTO Genre (Genre) VALUES (?)",
+              [genreName.trim()],
+              function (this: sqlite3.RunResult, insertErr: unknown) {
+                if (insertErr) return reject(insertErr);
+                resolve(this.lastID as number);
+              }
+            );
+          }
+        }
+      );
+    });
+  }
+}
+
+export interface Genre {
+  GenreID: number;
+  Genre: string;
+}
+
+export interface RentalHistoryEntry {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: boolean;
+  rentalDate: string;
+  returnedDate?: string;
+  memberName?: string;
+  memberEmail?: string;
+}
+
+// Raw database row interface for rental history queries
+interface RentalHistoryRow {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: number; // SQLite stores booleans as integers
+  RentalDate: string;
+  returnedDate?: string;
+  memberName?: string;
+  memberEmail?: string;
 }

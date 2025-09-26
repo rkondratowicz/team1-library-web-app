@@ -7,6 +7,8 @@ export function createBookRoutes(bookController: BookController): Router {
   router.get("/books", (req, res) => bookController.getAllBooksApi(req, res));
   router.get("/books/search", (req, res) => bookController.searchBooks(req, res));
   router.get("/getBook/:title", (req, res) => bookController.getBookByTitle(req, res));
+  router.get("/books/:isbn/details", (req, res) => bookController.getBookDetails(req, res));
+  router.get("/genres", (req, res) => bookController.getAllGenres(req, res));
 
   // Add new book
   router.post("/books/add", (req, res) => bookController.addBook(req, res));
