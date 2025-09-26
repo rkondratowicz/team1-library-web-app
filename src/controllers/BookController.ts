@@ -218,10 +218,13 @@ export class BookController {
     try {
       const booksWithCopies = await this.bookService.getAllBooksWithCopies();
       res.json({ success: true, data: booksWithCopies });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({
         success: false,
         message: "Error retrieving books with copies",
+      });
+    }
+  }
 
   async getBookDetails(req: Request, res: Response): Promise<void> {
     try {
@@ -264,6 +267,9 @@ export class BookController {
       res.status(500).render("books", {
         booksWithCopies: [],
         errors: ["Error retrieving books with copies"],
+      });
+    }
+  }
 
   async getAllGenres(_req: Request, res: Response): Promise<void> {
     try {

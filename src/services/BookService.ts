@@ -1,9 +1,11 @@
 import type { Book } from "../models/Book.js";
-
 import type { AvailableCopySummary, Copy, RentalWithCopyInfo } from "../models/Copy.js";
-import { BookRepository } from "../repositories/BookRepository.js";
+import {
+  BookRepository,
+  type Genre,
+  type RentalHistoryEntry,
+} from "../repositories/BookRepository.js";
 import { CopyRepository } from "../repositories/CopyRepository.js";
-
 
 export class BookService {
   private bookRepository: BookRepository;
@@ -45,18 +47,6 @@ export class BookService {
   async copyAvailable(copyID: number): Promise<boolean> {
     return await this.copyRepository.isAvailable(copyID);
   }
-  async getRentals(): Promise<RentalWithCopyInfo[]> {
-    return await this.bookRepository.getRentals();
-    let status: boolean = false;
-    if (book?.available !== undefined) {
-      if (book.available > 0) {
-        status = true;
-      } else {
-        status = false;
-      }
-    }
-    return status;
-  }
 
   async addBook(book: Book, genres?: string[]): Promise<Book> {
     if (genres && genres.length > 0) {
@@ -72,7 +62,7 @@ export class BookService {
     }
   }
 
-  async getRentals(): Promise<RentalHistoryEntry[]> {
+  async getRentals(): Promise<RentalWithCopyInfo[]> {
     return await this.bookRepository.getRentals();
   }
 

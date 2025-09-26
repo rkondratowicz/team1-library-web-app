@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
-import type { CopyIDRow, MemberRental, RentalIDRow, RentalWithCopyIDRow } from "../models/Copy.js";
+import type { CopyIDRow, MemberRental } from "../models/Copy.js";
 import type { CreateMemberRequest, Member } from "../models/member.js";
 
 export class MemberRepository {
@@ -66,14 +66,6 @@ export class MemberRepository {
         if (err) return reject(err);
         resolve();
       });
-      // Update copy availability to 0 (not available)
-      this.db.run(
-        `UPDATE copy SET Available = 0 WHERE copyID = ?`,
-        [copyID],
-        (err: Error | null) => {
-          if (err) return reject(err);
-        }
-      );
     });
   }
 
@@ -94,7 +86,6 @@ export class MemberRepository {
     });
   }
 
-
   getMemberRentals(memberID: number): Promise<MemberRental[]> {
     return new Promise((resolve, reject) => {
       const sql = `
@@ -112,18 +103,22 @@ export class MemberRepository {
     });
   }
 
-  returnCopy(memberID: number, copyID: number): Promise<void> {
+  async returnCopy(memberID: number, copyID: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      // First, check if there's an active rental for this copy
+      // First, check if there's an active rental for this copy and get the book ISBN
       const checkSql = `
-        SELECT rentalID FROM rentals 
-        WHERE memberID = ? AND copyID = ? AND (returned IS NULL OR returned = 0)
+        SELECT r.rentalID, c.bookISBN FROM rentals r
+        JOIN copy c ON r.copyID = c.copyID
+        WHERE r.memberID = ? AND r.copyID = ? AND (r.returned IS NULL OR r.returned = 0)
         LIMIT 1
       `;
 
-      this.db.get(checkSql, [memberID, copyID], (err: unknown, row: RentalIDRow | undefined) => {
-        if (err) return reject(err);
-        if (!row) return reject(new Error("No active rental found for this copy"));
+      this.db.get(
+        checkSql,
+        [memberID, copyID],
+        (err: unknown, row: RentalWithBookISBN | undefined) => {
+          if (err) return reject(err);
+          if (!row) return reject(new Error("No active rental found for this copy"));
 
           // Update the rental as returned
           const updateRentalSql = `
@@ -132,20 +127,20 @@ export class MemberRepository {
           WHERE rentalID = ?
         `;
 
-        this.db.run(updateRentalSql, [row.rentalID], (err: Error | null) => {
-          if (err) return reject(err);
-
-          // Mark copy as available again
-          const updateCopySql = `UPDATE copy SET Available = 1 WHERE copyID = ?`;
-          this.db.run(updateCopySql, [copyID], (err: Error | null) => {
-
+          this.db.run(updateRentalSql, [row.rentalID], (err: Error | null) => {
             if (err) return reject(err);
 
-            // Increase book availability
-            const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
-            this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+            // Mark copy as available again
+            const updateCopySql = `UPDATE copy SET Available = 1 WHERE copyID = ?`;
+            this.db.run(updateCopySql, [copyID], (err: Error | null) => {
               if (err) return reject(err);
-              resolve();
+
+              // Increase book availability
+              const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
+              this.db.run(updateBookSql, [row.bookISBN], (err: Error | null) => {
+                if (err) return reject(err);
+                resolve();
+              });
             });
           });
         }
@@ -156,9 +151,9 @@ export class MemberRepository {
   // Legacy method - kept for backward compatibility during transition
   returnBook(memberID: number, bookISBN: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Find the rented copy for this book and member
+      // Find an active rental for this member and book
       const findRentalSql = `
-        SELECT r.rentalID, r.copyID FROM rentals r
+        SELECT r.copyID FROM rentals r
         JOIN copy c ON r.copyID = c.copyID
         WHERE r.memberID = ? AND c.bookISBN = ? AND (r.returned IS NULL OR r.returned = 0)
         LIMIT 1
@@ -167,11 +162,11 @@ export class MemberRepository {
       this.db.get(
         findRentalSql,
         [memberID, bookISBN],
-        (err: unknown, row: RentalWithCopyIDRow | undefined) => {
+        (err: unknown, row: CopyIDRow | undefined) => {
           if (err) return reject(err);
           if (!row) return reject(new Error("No active rental found for this book"));
 
-          // Return the specific copy
+          // Return the found copy
           this.returnCopy(memberID, row.copyID)
             .then(() => resolve())
             .catch((error) => reject(error));
@@ -274,4 +269,10 @@ export interface MemberRentalData {
 // Interface for rental lookup row in returnBook method
 export interface RentalLookupRow {
   rentalID: number;
+}
+
+// Interface for rental with book ISBN used in returnCopy method
+interface RentalWithBookISBN {
+  rentalID: number;
+  bookISBN: string;
 }
