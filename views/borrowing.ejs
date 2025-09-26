@@ -403,6 +403,7 @@
         // State management
         let selectedMember = null;
         let selectedBook = null;
+        let selectedCopyId = null;
 
         // DOM Elements
         const memberSearch = document.getElementById('member-search');
@@ -553,13 +554,23 @@
             }
 
             try {
-                const response = await fetch(`/api/books/search?q=${encodeURIComponent(query)}`);
-                if (!response.ok) {
-                    throw new Error('Failed to search books');
+                // First, get books with copies information
+                const booksResponse = await fetch('/api/books-with-copies');
+                if (!booksResponse.ok) {
+                    throw new Error('Failed to fetch books with copies');
                 }
-
-                const books = await response.json();
-                displayBookResults(books);
+                
+                const booksWithCopies = await booksResponse.json();
+                const books = Array.isArray(booksWithCopies) ? booksWithCopies : (booksWithCopies.data || []);
+                
+                // Filter books based on search query
+                const filteredBooks = books.filter(book => 
+                    book.Title.toLowerCase().includes(query.toLowerCase()) ||
+                    book.Author.toLowerCase().includes(query.toLowerCase()) ||
+                    (book.bookISBN || book.ISBN).toLowerCase().includes(query.toLowerCase())
+                );
+                
+                displayBookResults(filteredBooks);
             } catch (error) {
                 console.error('Error searching books:', error);
                 showAlert('Error searching books. Please try again.', 'error');
@@ -582,8 +593,32 @@
         }
 
         function createBookCard(book) {
+            const availableCopies = book.availableCopies || 0;
+            const totalCopies = book.totalCopies || 0;
+            const copies = book.copies || [];
+            const isbn = book.bookISBN || book.ISBN;
+            
             const div = document.createElement('div');
-            div.className = 'card bg-base-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-base-300';
+            div.className = 'card bg-base-100 shadow-sm hover:shadow-md transition-shadow border border-base-300';
+            
+            // Create available copies section
+            const availableCopyButtons = copies
+                .filter(copy => copy.Available === 1)
+                .slice(0, 3)
+                .map(copy => `
+                    <button class="btn btn-success btn-xs copy-select-btn" data-copy-id="${copy.copyID}" data-book-title="${book.Title}" data-book-author="${book.Author}" data-book-isbn="${isbn}">
+                        Copy #${copy.copyID}
+                    </button>
+                `).join('');
+            
+            const moreAvailable = copies.filter(copy => copy.Available === 1).length;
+            const showMoreButton = moreAvailable > 3 
+                ? `<div class="text-xs text-base-content/60">+${moreAvailable - 3} more copies</div>`
+                : '';
+            
+            const copyStatusColor = availableCopies > 0 ? 'success' : 'error';
+            const copyStatusText = availableCopies > 0 ? `${availableCopies}/${totalCopies} available` : 'No copies available';
+            
             div.innerHTML = `
                 <div class="card-body p-3">
                     <div class="flex items-start gap-3">
@@ -593,17 +628,63 @@
                         <div class="flex-grow">
                             <div class="font-medium">${book.Title}</div>
                             <div class="text-sm opacity-75">${book.Author}</div>
-                            <div class="text-xs">ISBN: ${book.ISBN} | ${book.PublicationYear}</div>
+                            <div class="text-xs mb-2">ISBN: ${isbn} | ${book.PublicationYear}</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="badge badge-${copyStatusColor} badge-xs">${copyStatusText}</span>
+                            </div>
+                            ${availableCopies > 0 ? `
+                                <div class="flex flex-wrap gap-1">
+                                    ${availableCopyButtons}
+                                </div>
+                                ${showMoreButton}
+                            ` : '<div class="text-xs text-error">No copies available for rent</div>'}
                         </div>
-                        <button class="btn btn-success btn-xs">Select</button>
                     </div>
                 </div>
             `;
 
-            div.addEventListener('click', () => selectBook(book));
+            // Add event listeners for copy selection buttons
+            div.addEventListener('click', (e) => {
+                if (e.target.classList.contains('copy-select-btn')) {
+                    e.stopPropagation();
+                    const copyId = e.target.getAttribute('data-copy-id');
+                    const bookTitle = e.target.getAttribute('data-book-title');
+                    const bookAuthor = e.target.getAttribute('data-book-author');
+                    const bookISBN = e.target.getAttribute('data-book-isbn');
+                    selectCopy(parseInt(copyId), {
+                        Title: bookTitle,
+                        Author: bookAuthor,
+                        ISBN: bookISBN,
+                        PublicationYear: book.PublicationYear,
+                        Description: book.Description
+                    });
+                }
+            });
+
             return div;
         }
 
+        function selectCopy(copyId, book) {
+            selectedBook = book;
+            selectedCopyId = copyId;
+            
+            // Update UI
+            document.getElementById('book-title').textContent = book.Title;
+            document.getElementById('book-author').textContent = book.Author;
+            document.getElementById('book-isbn').textContent = `${book.ISBN} (Copy #${copyId})`;
+            document.getElementById('book-year').textContent = book.PublicationYear;
+            document.getElementById('book-description').textContent = book.Description || 'No description available';
+
+            // Show selected book section
+            selectedBookDiv.classList.remove('hidden');
+            bookResults.classList.add('hidden');
+            bookSearch.value = '';
+
+            updateTransactionSummary();
+            validateTransaction();
+        }
+
+        // Legacy function for backward compatibility
         function selectBook(book) {
             selectedBook = book;
             
@@ -625,6 +706,7 @@
 
         function clearBookSelection() {
             selectedBook = null;
+            selectedCopyId = null;
             selectedBookDiv.classList.add('hidden');
             bookResults.classList.add('hidden');
             bookSearch.value = '';
@@ -638,8 +720,11 @@
             if (selectedMember || selectedBook) {
                 document.getElementById('summary-member').textContent = 
                     selectedMember ? `${selectedMember.Fname} ${selectedMember.Sname}` : 'Not selected';
-                document.getElementById('summary-book').textContent = 
-                    selectedBook ? selectedBook.Title : 'Not selected';
+                
+                const bookText = selectedBook 
+                    ? (selectedCopyId ? `${selectedBook.Title} (Copy #${selectedCopyId})` : selectedBook.Title)
+                    : 'Not selected';
+                document.getElementById('summary-book').textContent = bookText;
                 
                 const today = new Date();
                 const dueDate = new Date(today);
@@ -665,7 +750,11 @@
             }
             
             if (!selectedBook) {
-                errors.push('Please select a book');
+                errors.push('Please select a book copy');
+            }
+            
+            if (selectedBook && !selectedCopyId) {
+                errors.push('Please select a specific copy to rent');
             }
             
             // Check if member already has maximum rentals (3 books limit)
@@ -731,12 +820,12 @@
                                 <div class="flex-grow">
                                     <div class="font-medium text-sm">${rental.Title}</div>
                                     <div class="text-xs text-base-content/70">by ${rental.Author}</div>
-                                    <div class="text-xs text-base-content/50">ISBN: ${rental.ISBN}</div>
+                                    <div class="text-xs text-base-content/50">ISBN: ${rental.ISBN} | Copy #${rental.copyID || 'N/A'}</div>
                                 </div>
                                 <button 
                                     class="btn btn-error btn-xs ml-2" 
-                                    onclick="showReturnConfirmation(${selectedMember.id}, '${rental.ISBN}', '${rental.Title}', '${rental.Author}')"
-                                    title="Return this book"
+                                    onclick="showReturnConfirmation(${selectedMember.id}, ${rental.copyID || rental.ISBN}, '${rental.Title}', '${rental.Author}', ${rental.copyID ? true : false})"
+                                    title="Return this copy"
                                 >
                                     <i class="fas fa-undo mr-1"></i>Return
                                 </button>
@@ -758,8 +847,8 @@
         }
 
         async function processBorrowing() {
-            if (!selectedMember || !selectedBook) {
-                showAlert('Please select both a member and a book', 'error');
+            if (!selectedMember || !selectedBook || !selectedCopyId) {
+                showAlert('Please select both a member and a specific book copy', 'error');
                 return;
             }
 
@@ -770,13 +859,14 @@
                 
                 console.log('Processing borrowing:', {
                     memberID: selectedMember.id,
+                    copyID: selectedCopyId,
                     bookTitle: selectedBook.Title,
                     member: selectedMember,
                     book: selectedBook
                 });
 
-                // Make actual API call to rent the book
-                const response = await fetch(`/api/members/${selectedMember.id}/rental/${encodeURIComponent(selectedBook.Title)}`, {
+                // Make actual API call to rent the specific copy
+                const response = await fetch(`/api/members/${selectedMember.id}/rent-copy/${selectedCopyId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -808,15 +898,18 @@
         // Store return details for the confirmation modal
         let pendingReturn = null;
 
-        function showReturnConfirmation(memberId, bookISBN, bookTitle, bookAuthor) {
+        function showReturnConfirmation(memberId, idValue, bookTitle, bookAuthor, isCopyId = true) {
             pendingReturn = {
                 memberId: memberId,
-                bookISBN: bookISBN,
+                isCopyId: isCopyId,
+                copyID: isCopyId ? idValue : null,
+                bookISBN: isCopyId ? null : idValue,
                 bookTitle: bookTitle,
                 bookAuthor: bookAuthor
             };
 
             // Populate the modal with book details
+            const idLabel = isCopyId ? `Copy #${idValue}` : `ISBN: ${idValue}`;
             document.getElementById('return-book-details').innerHTML = `
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-16 bg-gradient-to-b from-warning to-warning-focus rounded flex items-center justify-center text-warning-content">
@@ -825,7 +918,7 @@
                     <div>
                         <div class="font-medium">${bookTitle}</div>
                         <div class="text-sm opacity-75">by ${bookAuthor}</div>
-                        <div class="text-xs opacity-60">ISBN: ${bookISBN}</div>
+                        <div class="text-xs opacity-60">${idLabel}</div>
                     </div>
                 </div>
             `;
@@ -842,11 +935,13 @@
         async function confirmReturn() {
             if (!pendingReturn) return;
 
-            const { memberId, bookISBN } = pendingReturn;
+            const { memberId, isCopyId, copyID, bookISBN } = pendingReturn;
 
             try {
-                console.log('Processing book return:', {
+                console.log('Processing return:', {
                     memberID: memberId,
+                    isCopyId: isCopyId,
+                    copyID: copyID,
                     bookISBN: bookISBN
                 });
 
@@ -856,7 +951,12 @@
                 confirmBtn.disabled = true;
                 confirmBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Returning...';
 
-                const response = await fetch(`/api/members/${memberId}/return/${bookISBN}`, {
+                // Use the appropriate API endpoint based on the type
+                const endpoint = isCopyId 
+                    ? `/api/members/${memberId}/return-copy/${copyID}`
+                    : `/api/members/${memberId}/return/${bookISBN}`;
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

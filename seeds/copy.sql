@@ -1,181 +1,181 @@
 -- Seed data for Copy table
--- Multiple copies of books with various statuses
+-- Multiple copies of books with various availability status
 
-INSERT INTO copy (copyID, ISBN, status) VALUES
+INSERT INTO copy (bookISBN, Available) VALUES
 -- To Kill a Mockingbird copies
-('COPY-001', '9780061120084', 'Available'),
-('COPY-002', '9780061120084', 'Available'),
-('COPY-003', '9780061120084', 'Available'),
+('9780061120084', 1),
+('9780061120084', 1),
+('9780061120084', 1),
 
 -- 1984 copies
-('COPY-004', '9780451524935', 'Available'),
-('COPY-005', '9780451524935', 'Available'),
-('COPY-006', '9780451524935', 'Available'),
-('COPY-007', '9780451524935', 'Available'),
+('9780451524935', 1),
+('9780451524935', 1),
+('9780451524935', 1),
+('9780451524935', 1),
 
 -- The Great Gatsby copies
-('COPY-008', '9780743273565', 'Available'),
-('COPY-009', '9780743273565', 'Available'),
+('9780743273565', 1),
+('9780743273565', 1),
 
 -- The Catcher in the Rye copies
-('COPY-010', '9780316769488', 'Available'),
-('COPY-011', '9780316769488', 'Available'),
-('COPY-012', '9780316769488', 'Available'),
+('9780316769488', 1),
+('9780316769488', 1),
+('9780316769488', 1),
 
 -- Moby Dick copies
-('COPY-013', '9781503280786', 'Available'),
-('COPY-014', '9781503280786', 'Available'),
+('9781503280786', 1),
+('9781503280786', 1),
 
 -- Pride and Prejudice copies
-('COPY-015', '9780141439518', 'Available'),
-('COPY-016', '9780141439518', 'Available'),
-('COPY-017', '9780141439518', 'Available'),
+('9780141439518', 1),
+('9780141439518', 1),
+('9780141439518', 1),
 
 -- The Hobbit copies
-('COPY-018', '9780547928227', 'Available'),
-('COPY-019', '9780547928227', 'Available'),
-('COPY-020', '9780547928227', 'Available'),
-('COPY-021', '9780547928227', 'Available'),
+('9780547928227', 1),
+('9780547928227', 1),
+('9780547928227', 1),
+('9780547928227', 1),
 
 -- Brave New World copies
-('COPY-022', '9780060850524', 'Available'),
-('COPY-023', '9780060850524', 'Available'),
+('9780060850524', 1),
+('9780060850524', 1),
 
 -- The Book Thief copies
-('COPY-024', '9780375842207', 'Available'),
-('COPY-025', '9780375842207', 'Available'),
+('9780375842207', 1),
+('9780375842207', 1),
 
 -- The Road copies
-('COPY-026', '9780307387899', 'Available'),
-('COPY-027', '9780307387899', 'Available'),
+('9780307387899', 1),
+('9780307387899', 1),
 
 -- The Alchemist copies
-('COPY-028', '9780061122415', 'Available'),
-('COPY-029', '9780061122415', 'Available'),
-('COPY-030', '9780061122415', 'Available'),
+('9780061122415', 1),
+('9780061122415', 1),
+('9780061122415', 1),
 
 -- War and Peace copies
-('COPY-031', '9780199232765', 'Available'),
-('COPY-032', '9780199232765', 'Available'),
+('9780199232765', 1),
+('9780199232765', 1),
 
 -- Crime and Punishment copies
-('COPY-033', '9780140449136', 'Available'),
-('COPY-034', '9780140449136', 'Available'),
+('9780140449136', 1),
+('9780140449136', 1),
 
 -- Jane Eyre copies
-('COPY-035', '9780141441146', 'Available'),
-('COPY-036', '9780141441146', 'Available'),
+('9780141441146', 1),
+('9780141441146', 1),
 
 -- Wuthering Heights copies
-('COPY-037', '9780141439556', 'Available'),
-('COPY-038', '9780141439556', 'Available'),
+('9780141439556', 1),
+('9780141439556', 1),
 
 -- The Lord of the Rings copies
-('COPY-039', '9780618640157', 'Available'),
-('COPY-040', '9780618640157', 'Available'),
-('COPY-041', '9780618640157', 'Available'),
-('COPY-042', '9780618640157', 'Available'),
+('9780618640157', 1),
+('9780618640157', 1),
+('9780618640157', 1),
+('9780618640157', 1),
 
 -- The Kite Runner copies
-('COPY-043', '9781594631931', 'Available'),
-('COPY-044', '9781594631931', 'Available'),
+('9781594631931', 1),
+('9781594631931', 1),
 
 -- The Da Vinci Code copies
-('COPY-045', '9780307474278', 'Available'),
-('COPY-046', '9780307474278', 'Available'),
-('COPY-047', '9780307474278', 'Available'),
+('9780307474278', 1),
+('9780307474278', 1),
+('9780307474278', 1),
 
 -- The Hunger Games copies
-('COPY-048', '9780439023528', 'Available'),
-('COPY-049', '9780439023528', 'Available'),
-('COPY-050', '9780439023528', 'Available'),
+('9780439023528', 1),
+('9780439023528', 1),
+('9780439023528', 1),
 
 -- Harry Potter and the Stone copies
-('COPY-051', '9780590353427', 'Available'),
-('COPY-052', '9780590353427', 'Available'),
-('COPY-053', '9780590353427', 'Available'),
-('COPY-054', '9780590353427', 'Available'),
+('9780590353427', 1),
+('9780590353427', 1),
+('9780590353427', 1),
+('9780590353427', 1),
 
 -- The Fault in Our Stars copies
-('COPY-055', '9780142424179', 'Available'),
-('COPY-056', '9780142424179', 'Available'),
+('9780142424179', 1),
+('9780142424179', 1),
 
 -- Gone Girl copies
-('COPY-057', '9780307588371', 'Available'),
-('COPY-058', '9780307588371', 'Available'),
+('9780307588371', 1),
+('9780307588371', 1),
 
 -- The Girl on the Train copies
-('COPY-059', '9781594204489', 'Available'),
-('COPY-060', '9781594204489', 'Available'),
+('9781594204489', 1),
+('9781594204489', 1),
 
 -- Memoirs of a Geisha copies
-('COPY-061', '9780679781585', 'Available'),
-('COPY-062', '9780679781585', 'Available'),
+('9780679781585', 1),
+('9780679781585', 1),
 
 -- Life of Pi copies
-('COPY-063', '9780156027328', 'Available'),
-('COPY-064', '9780156027328', 'Available'),
+('9780156027328', 1),
+('9780156027328', 1),
 
 -- The Shining copies
-('COPY-065', '9780307743657', 'Available'),
-('COPY-066', '9780307743657', 'Available'),
-('COPY-067', '9780307743657', 'Available'),
+('9780307743657', 1),
+('9780307743657', 1),
+('9780307743657', 1),
 
 -- The Stand copies
-('COPY-068', '9780307743688', 'Available'),
-('COPY-069', '9780307743688', 'Available'),
+('9780307743688', 1),
+('9780307743688', 1),
 
 -- It copies
-('COPY-070', '9781501142970', 'Available'),
-('COPY-071', '9781501142970', 'Available'),
-('COPY-072', '9781501142970', 'Available'),
+('9781501142970', 1),
+('9781501142970', 1),
+('9781501142970', 1),
 
 -- The Outsiders copies
-('COPY-073', '9780142407332', 'Available'),
-('COPY-074', '9780142407332', 'Available'),
+('9780142407332', 1),
+('9780142407332', 1),
 
 -- Charlotte's Web copies
-('COPY-075', '9780064400558', 'Available'),
-('COPY-076', '9780064400558', 'Available'),
-('COPY-077', '9780064400558', 'Available'),
+('9780064400558', 1),
+('9780064400558', 1),
+('9780064400558', 1),
 
 -- Matilda copies
-('COPY-078', '9780142410370', 'Available'),
-('COPY-079', '9780142410370', 'Available'),
+('9780142410370', 1),
+('9780142410370', 1),
 
 -- The Little Prince copies
-('COPY-080', '9780156012195', 'Available'),
-('COPY-081', '9780156012195', 'Available'),
-('COPY-082', '9780156012195', 'Available'),
+('9780156012195', 1),
+('9780156012195', 1),
+('9780156012195', 1),
 
 -- Anne of Green Gables copies
-('COPY-083', '9780141321592', 'Available'),
-('COPY-084', '9780141321592', 'Available'),
+('9780141321592', 1),
+('9780141321592', 1),
 
 -- Little Women copies
-('COPY-085', '9780147514004', 'Available'),
-('COPY-086', '9780147514004', 'Available'),
+('9780147514004', 1),
+('9780147514004', 1),
 
 -- Frankenstein copies
-('COPY-087', '9780486282114', 'Available'),
-('COPY-088', '9780486282114', 'Available'),
-('COPY-089', '9780486282114', 'Available'),
+('9780486282114', 1),
+('9780486282114', 1),
+('9780486282114', 1),
 
 -- Dracula copies
-('COPY-090', '9780486411095', 'Available'),
-('COPY-091', '9780486411095', 'Available'),
-('COPY-092', '9780486411095', 'Available'),
+('9780486411095', 1),
+('9780486411095', 1),
+('9780486411095', 1),
 
 -- The Picture of Dorian Gray copies
-('COPY-093', '9780141439570', 'Available'),
-('COPY-094', '9780141439570', 'Available'),
+('9780141439570', 1),
+('9780141439570', 1),
 
 -- The Color Purple copies
-('COPY-095', '9780156028356', 'Available'),
-('COPY-096', '9780156028356', 'Available'),
+('9780156028356', 1),
+('9780156028356', 1),
 
 -- Beloved copies
-('COPY-097', '9781400033416', 'Available'),
-('COPY-098', '9781400033416', 'Available'),
-('COPY-099', '9781400033416', 'Available'),
-('COPY-100', '9781400033416', 'Available');
+('9781400033416', 1),
+('9781400033416', 1),
+('9781400033416', 1),
+('9781400033416', 1);

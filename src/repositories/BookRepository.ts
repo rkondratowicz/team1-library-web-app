@@ -42,18 +42,24 @@ export class BookRepository {
       });
     });
   }
-  getRentals(): Promise<Book[]> {
+  getRentals(): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(
-        `SELECT m.id,m.fname,m.Sname, m.email , b.ISBN,b.Title, b.Author 
+      const sql = `
+        SELECT m.id, m.fname, m.Sname, m.email, 
+               b.ISBN, b.Title, b.Author,
+               r.copyID, r.rentalID, r.RentalDate,
+               c.Available as copyAvailable
         FROM members as m 
-        JOIN rentals as r on m.id=r.memberID 
-        join books as b on r.bookISBN=b.ISBN order by r.rentalDate desc ;`,
-        (err: unknown, rows: Book[]) => {
-          if (err) return reject(err);
-          resolve(rows);
-        }
-      );
+        JOIN rentals as r on m.id = r.memberID 
+        JOIN copy as c on r.copyID = c.copyID
+        JOIN books as b on c.bookISBN = b.ISBN 
+        WHERE r.returned = 0 OR r.returned IS NULL
+        ORDER BY r.RentalDate desc
+      `;
+      this.db.all(sql, (err: unknown, rows: any[]) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
     });
   }
   findByTitle(title: string): Promise<Book | undefined> {

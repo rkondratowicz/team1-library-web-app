@@ -1,7 +1,7 @@
 export interface Rental {
   rentalID?: number;
   memberID: number;
-  bookISBN: string;
+  copyID: number;
   returned: number; // 0 = not returned, 1 = returned
   RentalDate: string;
   returnedDate?: string;
@@ -9,11 +9,12 @@ export interface Rental {
 
 export interface CreateRentalRequest {
   memberID: number;
-  bookISBN: string;
+  copyID: number;
 }
 
 export interface ActiveRentalInfo {
   rentalID: number;
+  copyID: number;
   bookISBN: string;
   bookTitle: string;
   bookAuthor: string;

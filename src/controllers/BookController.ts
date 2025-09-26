@@ -167,4 +167,27 @@ export class BookController {
         .json({ success: false, message: "Error searching books", errors: [String(error)] });
     }
   }
+
+  async getAllBooksWithCopies(_req: Request, res: Response): Promise<void> {
+    try {
+      const booksWithCopies = await this.bookService.getAllBooksWithCopies();
+      res.json({ success: true, data: booksWithCopies });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ success: false, message: "Error retrieving books with copies", errors: [String(error)] });
+    }
+  }
+
+  async getBooksWithCopiesView(_req: Request, res: Response): Promise<void> {
+    try {
+      const booksWithCopies = await this.bookService.getAllBooksWithCopies();
+      res.render("books", { booksWithCopies: booksWithCopies });
+    } catch (error) {
+      res.status(500).render("books", { 
+        booksWithCopies: [], 
+        errors: ["Error retrieving books with copies"] 
+      });
+    }
+  }
 }
