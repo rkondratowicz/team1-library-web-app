@@ -20,6 +20,10 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // GET /api/members/:id
   router.get("/members/:id", (req, res) => memberController.getMemberById(req, res));
 
+  // Get member rentals
+  // GET /api/members/:id/rentals
+  router.get("/members/:id/rentals", (req, res) => memberController.getMemberRentals(req, res));
+
   // Update member by ID
   // PUT /api/members/:id
   router.put("/members/:id", (req, res) => memberController.updateMember(req, res));

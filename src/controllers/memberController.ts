@@ -54,6 +54,30 @@ export class MemberController {
     }
   }
 
+  async getMemberRentals(req: Request, res: Response): Promise<void> {
+    try {
+      const memberId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(memberId)) {
+        res.status(400).json({ error: "Invalid member ID" });
+        return;
+      }
+
+      const rentals = await this.memberService.getMemberRentals(memberId);
+
+      res.status(200).json({
+        success: true,
+        data: rentals,
+        count: rentals.length,
+      });
+    } catch (error) {
+      console.error("Error fetching member rentals:", error);
+      res.status(500).json({
+        error: "An error occurred while fetching member rentals",
+      });
+    }
+  }
+
   // GET /api/members/search?q=query
   async searchMembers(req: Request, res: Response): Promise<void> {
     try {

@@ -135,6 +135,7 @@
                                         <i class="fas fa-book-open text-warning"></i>
                                         <span class="font-medium text-sm">Current Rentals:</span>
                                         <span id="rental-count" class="badge badge-warning">0</span>
+                                        <span class="text-xs text-base-content/50">/ 3 max</span>
                                     </div>
                                     <div id="current-rentals" class="text-sm text-base-content/70">
                                         No current rentals
@@ -461,6 +462,7 @@
 
         function clearMemberSelection() {
             selectedMember = null;
+            memberRentals = [];
             selectedMemberDiv.classList.add('hidden');
             memberResults.classList.add('hidden');
             memberSearch.value = '';
@@ -593,9 +595,9 @@
                 errors.push('Please select a book');
             }
             
-            // Check if member already has a rental (based on our requirement of 1 book at a time)
-            if (selectedMember && hasActiveRental(selectedMember.id)) {
-                errors.push('This member already has an active rental. Only one book can be borrowed at a time.');
+            // Check if member already has maximum rentals (3 books limit)
+            if (selectedMember && memberRentals.length >= 3) {
+                errors.push('This member already has 3 active rentals. Maximum of 3 books can be borrowed at a time.');
             }
             
             if (errors.length > 0) {
@@ -621,18 +623,49 @@
             validationMessages.classList.remove('hidden');
         }
 
-        // Placeholder function for checking member rentals
-        function hasActiveRental(memberId) {
-            // This would normally make an API call to check active rentals
-            // For now, return false as placeholder
-            return false;
+        // Check if member has reached the maximum rental limit (3 books)
+        function hasReachedMaxRentals(memberId) {
+            return memberRentals.length >= 3;
         }
 
-        function checkMemberRentals(memberId) {
-            // Placeholder for checking current rentals
-            // This would make an API call to get current rentals
-            document.getElementById('rental-count').textContent = '0';
-            document.getElementById('current-rentals').textContent = 'No current rentals';
+        // Store member rentals for validation
+        let memberRentals = [];
+
+        async function checkMemberRentals(memberId) {
+            try {
+                const response = await fetch(`/api/members/${memberId}/rentals`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch member rentals');
+                }
+                
+                const result = await response.json();
+                memberRentals = result.data || [];
+                
+                const rentalCount = memberRentals.length;
+                document.getElementById('rental-count').textContent = rentalCount.toString();
+                
+                // Update badge color based on rental count
+                const rentalBadge = document.getElementById('rental-count');
+                rentalBadge.className = 'badge ' + (rentalCount >= 3 ? 'badge-error' : rentalCount >= 2 ? 'badge-warning' : 'badge-success');
+                
+                if (rentalCount === 0) {
+                    document.getElementById('current-rentals').textContent = 'No current rentals';
+                } else {
+                    const rentalsList = memberRentals.map(rental => 
+                        `• ${rental.Title} by ${rental.Author}`
+                    ).join('<br>');
+                    document.getElementById('current-rentals').innerHTML = rentalsList;
+                }
+                
+                // Update validation since we now know about active rentals
+                validateTransaction();
+                
+            } catch (error) {
+                console.error('Error fetching member rentals:', error);
+                document.getElementById('rental-count').textContent = '?';
+                document.getElementById('current-rentals').textContent = 'Error loading rentals';
+                memberRentals = [];
+            }
         }
 
         async function processBorrowing() {
@@ -642,26 +675,41 @@
             }
 
             try {
-                // This would normally make an API call to create the rental
-                // Since no API development is required, we'll simulate success
+                // Update UI to show processing
+                processBorrowingBtn.disabled = true;
+                processBorrowingBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing...';
+                
                 console.log('Processing borrowing:', {
                     memberID: selectedMember.id,
-                    bookISBN: selectedBook.ISBN,
+                    bookTitle: selectedBook.Title,
                     member: selectedMember,
                     book: selectedBook
                 });
 
-                // Simulate API delay
-                processBorrowingBtn.disabled = true;
-                processBorrowingBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing...';
+                // Make actual API call to rent the book
+                const response = await fetch(`/api/members/${selectedMember.id}/rental/${encodeURIComponent(selectedBook.Title)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to process borrowing');
+                }
+
+                const result = await response.json();
+                console.log('Borrowing successful:', result);
                 
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Update member rentals display
+                await checkMemberRentals(selectedMember.id);
                 
                 showSuccessModal();
                 
             } catch (error) {
                 console.error('Error processing borrowing:', error);
-                showErrorModal('Failed to process borrowing. Please try again.');
+                showErrorModal(error.message || 'Failed to process borrowing. Please try again.');
             } finally {
                 processBorrowingBtn.disabled = false;
                 processBorrowingBtn.innerHTML = '<i class="fas fa-handshake mr-2"></i> Process Borrowing';
