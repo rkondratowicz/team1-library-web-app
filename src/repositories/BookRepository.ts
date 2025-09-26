@@ -11,9 +11,36 @@ export class BookRepository {
 
   findAll(): Promise<Book[]> {
     return new Promise((resolve, reject) => {
-      this.db.all("SELECT * FROM books", (err: unknown, rows: Book[]) => {
+      // First get all books
+      this.db.all("SELECT * FROM books", (err: unknown, bookRows: Book[]) => {
         if (err) return reject(err);
-        resolve(rows);
+        
+        if (bookRows.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        // Then get genres for each book
+        const bookPromises = bookRows.map((book) => {
+          return new Promise<Book>((bookResolve, bookReject) => {
+            this.db.all(
+              `SELECT g.Genre 
+               FROM Genre g 
+               JOIN BookGenre bg ON g.GenreID = bg.GenreID 
+               WHERE bg.ISBN = ?`,
+              [book.ISBN],
+              (genreErr: unknown, genreRows: { Genre: string }[]) => {
+                if (genreErr) return bookReject(genreErr);
+                book.genres = genreRows.map(row => row.Genre);
+                bookResolve(book);
+              }
+            );
+          });
+        });
+
+        Promise.all(bookPromises)
+          .then(resolve)
+          .catch(reject);
       });
     });
   }
@@ -25,7 +52,24 @@ export class BookRepository {
         [title],
         (err: unknown, row: Book | undefined) => {
           if (err) return reject(err);
-          resolve(row);
+          if (!row) {
+            resolve(undefined);
+            return;
+          }
+
+          // Get genres for this book
+          this.db.all(
+            `SELECT g.Genre 
+             FROM Genre g 
+             JOIN BookGenre bg ON g.GenreID = bg.GenreID 
+             WHERE bg.ISBN = ?`,
+            [row.ISBN],
+            (genreErr: unknown, genreRows: { Genre: string }[]) => {
+              if (genreErr) return reject(genreErr);
+              row.genres = genreRows.map(genreRow => genreRow.Genre);
+              resolve(row);
+            }
+          );
         }
       );
     });
@@ -41,9 +85,35 @@ export class BookRepository {
          OR CAST(ISBN AS TEXT) LIKE ?
          ORDER BY Title ASC`,
         [searchPattern, searchPattern, searchPattern],
-        (err: unknown, rows: Book[]) => {
+        (err: unknown, bookRows: Book[]) => {
           if (err) return reject(err);
-          resolve(rows);
+          
+          if (bookRows.length === 0) {
+            resolve([]);
+            return;
+          }
+
+          // Get genres for each book
+          const bookPromises = bookRows.map((book) => {
+            return new Promise<Book>((bookResolve, bookReject) => {
+              this.db.all(
+                `SELECT g.Genre 
+                 FROM Genre g 
+                 JOIN BookGenre bg ON g.GenreID = bg.GenreID 
+                 WHERE bg.ISBN = ?`,
+                [book.ISBN],
+                (genreErr: unknown, genreRows: { Genre: string }[]) => {
+                  if (genreErr) return bookReject(genreErr);
+                  book.genres = genreRows.map(row => row.Genre);
+                  bookResolve(book);
+                }
+              );
+            });
+          });
+
+          Promise.all(bookPromises)
+            .then(resolve)
+            .catch(reject);
         }
       );
     });
