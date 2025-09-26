@@ -32,6 +32,12 @@ export function createMemberRoutes(memberController: MemberController): Router {
     memberController.rentBook(req, res);
   });
 
+  // Return a book
+  // POST /api/members/:id/return/:bookISBN
+  router.post("/members/:id/return/:bookISBN", (req, res) => {
+    memberController.returnBook(req, res);
+  });
+
   // Delete member by ID
   // DELETE /api/members/:id
   router.delete("/members/:id", (req, res) => memberController.deleteMember(req, res));

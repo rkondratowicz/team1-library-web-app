@@ -78,6 +78,34 @@ export class MemberController {
     }
   }
 
+  async returnBook(req: Request, res: Response): Promise<void> {
+    try {
+      console.log("Return book request received");
+      console.log("Member ID:", req.params.id, "Book ISBN:", req.params.bookISBN);
+
+      const memberId = parseInt(req.params.id, 10);
+      const bookISBN = req.params.bookISBN;
+
+      if (Number.isNaN(memberId)) {
+        res.status(400).json({ error: "Invalid member ID" });
+        return;
+      }
+
+      const result = await this.memberService.returnBook(memberId, bookISBN);
+
+      if (result.success) {
+        res.status(200).json({ success: true, message: result.message });
+        return;
+      } else {
+        res.status(400).json({ error: result.message });
+        return;
+      }
+    } catch (err: unknown) {
+      console.error("Error returning book:", err);
+      res.status(500).json({ error: "An error occurred while returning the book" });
+    }
+  }
+
   // GET /api/members/search?q=query
   async searchMembers(req: Request, res: Response): Promise<void> {
     try {
