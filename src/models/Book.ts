@@ -13,9 +13,9 @@ export interface Book {
 export interface BookCopy {
   copyId: string;
   isbn: string;
-  status: 'available' | 'borrowed' | 'maintenance' | 'lost';
+  status: "available" | "borrowed" | "maintenance" | "lost";
   acquisitionDate?: string;
-  condition?: 'new' | 'good' | 'fair' | 'poor';
+  condition?: "new" | "good" | "fair" | "poor";
   location?: string; // Shelf location
 }
 
@@ -26,7 +26,7 @@ export interface CopyTimeline {
 
 export interface TimelineEvent {
   eventId: string;
-  eventType: 'acquired' | 'borrowed' | 'returned' | 'maintenance' | 'lost';
+  eventType: "acquired" | "borrowed" | "returned" | "maintenance" | "lost";
   date: string;
   memberInfo?: {
     id: number;

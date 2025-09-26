@@ -168,20 +168,20 @@ export class BookRepository {
         WHERE r.bookISBN = ?
         ORDER BY r.RentalDate ASC
       `;
-      
-      console.log('Executing rental history query for ISBN:', isbn);
-      console.log('SQL:', sql);
-      
+
+      console.log("Executing rental history query for ISBN:", isbn);
+      console.log("SQL:", sql);
+
       this.db.all(sql, [isbn], (err: unknown, rows: any[]) => {
         if (err) {
-          console.error('Database error in findRentalHistory:', err);
+          console.error("Database error in findRentalHistory:", err);
           return reject(err);
         }
-        
-        console.log('Rental history query returned', rows?.length || 0, 'rows');
-        console.log('Sample data:', rows?.[0]);
-        
-        const rentalHistory: RentalHistoryEntry[] = rows.map(row => ({
+
+        console.log("Rental history query returned", rows?.length || 0, "rows");
+        console.log("Sample data:", rows?.[0]);
+
+        const rentalHistory: RentalHistoryEntry[] = rows.map((row) => ({
           rentalID: row.rentalID,
           memberID: row.memberID,
           bookISBN: row.bookISBN,
@@ -189,9 +189,9 @@ export class BookRepository {
           rentalDate: row.RentalDate,
           returnedDate: row.returnedDate,
           memberName: row.memberName,
-          memberEmail: row.memberEmail
+          memberEmail: row.memberEmail,
         }));
-        
+
         resolve(rentalHistory);
       });
     });
@@ -199,23 +199,23 @@ export class BookRepository {
 
   findByISBN(isbn: string): Promise<Book | undefined> {
     return new Promise((resolve, reject) => {
-      console.log('Finding book by ISBN:', isbn);
-      
+      console.log("Finding book by ISBN:", isbn);
+
       this.db.get(
         "SELECT * FROM books WHERE ISBN = ?",
         [isbn],
         (err: unknown, row: Book | undefined) => {
           if (err) {
-            console.error('Database error in findByISBN:', err);
+            console.error("Database error in findByISBN:", err);
             return reject(err);
           }
           if (!row) {
-            console.log('No book found with ISBN:', isbn);
+            console.log("No book found with ISBN:", isbn);
             resolve(undefined);
             return;
           }
 
-          console.log('Found book:', row);
+          console.log("Found book:", row);
 
           // Get genres for this book
           this.db.all(
@@ -226,10 +226,10 @@ export class BookRepository {
             [row.ISBN],
             (genreErr: unknown, genreRows: { Genre: string }[]) => {
               if (genreErr) {
-                console.error('Database error getting genres:', genreErr);
+                console.error("Database error getting genres:", genreErr);
                 return reject(genreErr);
               }
-              console.log('Found genres for book:', genreRows);
+              console.log("Found genres for book:", genreRows);
               row.genres = genreRows.map((genreRow) => genreRow.Genre);
               resolve(row);
             }

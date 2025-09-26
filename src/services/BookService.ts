@@ -52,12 +52,12 @@ export class BookService {
     }
 
     const rentalHistory = await this.bookRepository.findRentalHistory(isbn);
-    
+
     return {
       book,
       rentalHistory,
-      currentlyBorrowed: rentalHistory.some(rental => !rental.returned),
-      totalRentals: rentalHistory.length
+      currentlyBorrowed: rentalHistory.some((rental) => !rental.returned),
+      totalRentals: rentalHistory.length,
     };
   }
 }

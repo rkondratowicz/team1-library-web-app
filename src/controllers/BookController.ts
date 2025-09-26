@@ -162,27 +162,35 @@ export class BookController {
   async getBookDetails(req: Request, res: Response): Promise<void> {
     try {
       const isbn = req.params.isbn;
-      console.log('BookController.getBookDetails called with ISBN:', isbn);
-      
+      console.log("BookController.getBookDetails called with ISBN:", isbn);
+
       if (!isbn) {
         res.status(400).json({ success: false, message: "ISBN is required" });
         return;
       }
 
       const bookDetails = await this.bookService.getBookDetails(isbn);
-      console.log('BookDetails result:', bookDetails);
-      
+      console.log("BookDetails result:", bookDetails);
+
       if (!bookDetails) {
         res.status(404).json({ success: false, message: "Book not found" });
         return;
       }
 
-      res.json({ success: true, data: bookDetails, message: "Book details retrieved successfully" });
+      res.json({
+        success: true,
+        data: bookDetails,
+        message: "Book details retrieved successfully",
+      });
     } catch (error) {
-      console.error('Error in BookController.getBookDetails:', error);
+      console.error("Error in BookController.getBookDetails:", error);
       res
         .status(500)
-        .json({ success: false, message: "Error retrieving book details", errors: [String(error)] });
+        .json({
+          success: false,
+          message: "Error retrieving book details",
+          errors: [String(error)],
+        });
     }
   }
 }
