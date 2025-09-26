@@ -172,7 +172,7 @@ export class BookRepository {
       console.log("Executing rental history query for ISBN:", isbn);
       console.log("SQL:", sql);
 
-      this.db.all(sql, [isbn], (err: unknown, rows: any[]) => {
+      this.db.all(sql, [isbn], (err: unknown, rows: RentalHistoryRow[]) => {
         if (err) {
           console.error("Database error in findRentalHistory:", err);
           return reject(err);
@@ -372,28 +372,22 @@ export class BookRepository {
         this.db.run("BEGIN TRANSACTION");
 
         // First delete genre associations
-        this.db.run(
-          "DELETE FROM BookGenre WHERE ISBN = ?",
-          [isbn],
-          (genreErr: unknown) => {
-            if (genreErr) {
+        this.db.run("DELETE FROM BookGenre WHERE ISBN = ?", [isbn], (genreErr: unknown) => {
+          if (genreErr) {
+            this.db.run("ROLLBACK");
+            return reject(genreErr);
+          }
+
+          // Then delete the book
+          this.db.run("DELETE FROM Books WHERE ISBN = ?", [isbn], (bookErr: unknown) => {
+            if (bookErr) {
               this.db.run("ROLLBACK");
-              return reject(genreErr);
+              return reject(bookErr);
             }
 
-            // Then delete the book
+            // Clean up orphaned genres (genres not associated with any books)
             this.db.run(
-              "DELETE FROM Books WHERE ISBN = ?",
-              [isbn],
-              (bookErr: unknown) => {
-                if (bookErr) {
-                  this.db.run("ROLLBACK");
-                  return reject(bookErr);
-                }
-
-                // Clean up orphaned genres (genres not associated with any books)
-                this.db.run(
-                  `DELETE FROM Genre 
+              `DELETE FROM Genre 
                    WHERE GenreID NOT IN (
                      SELECT DISTINCT GenreID FROM BookGenre
                    )
@@ -406,19 +400,17 @@ export class BookRepository {
                        'Self-Help', 'Business', 'Health & Fitness'
                      )
                    )`,
-                  (cleanupErr: unknown) => {
-                    if (cleanupErr) {
-                      console.warn("Warning: Could not clean up orphaned genres:", cleanupErr);
-                    }
-                    
-                    this.db.run("COMMIT");
-                    resolve();
-                  }
-                );
+              (cleanupErr: unknown) => {
+                if (cleanupErr) {
+                  console.warn("Warning: Could not clean up orphaned genres:", cleanupErr);
+                }
+
+                this.db.run("COMMIT");
+                resolve();
               }
             );
-          }
-        );
+          });
+        });
       });
     });
   }
@@ -432,7 +424,7 @@ export class BookRepository {
         [genreName.trim()],
         (err: unknown, row: { GenreID: number } | undefined) => {
           if (err) return reject(err);
-          
+
           if (row) {
             resolve(row.GenreID);
           } else {
@@ -440,7 +432,7 @@ export class BookRepository {
             this.db.run(
               "INSERT INTO Genre (Genre) VALUES (?)",
               [genreName.trim()],
-              function(this: sqlite3.RunResult, insertErr: unknown) {
+              function (this: sqlite3.RunResult, insertErr: unknown) {
                 if (insertErr) return reject(insertErr);
                 resolve(this.lastID as number);
               }
@@ -463,6 +455,18 @@ export interface RentalHistoryEntry {
   bookISBN: string;
   returned: boolean;
   rentalDate: string;
+  returnedDate?: string;
+  memberName?: string;
+  memberEmail?: string;
+}
+
+// Raw database row interface for rental history queries
+interface RentalHistoryRow {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: number; // SQLite stores booleans as integers
+  RentalDate: string;
   returnedDate?: string;
   memberName?: string;
   memberEmail?: string;

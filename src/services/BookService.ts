@@ -1,5 +1,9 @@
 import type { Book } from "../models/Book.js";
-import { BookRepository, type RentalHistoryEntry, type Genre } from "../repositories/BookRepository.js";
+import {
+  BookRepository,
+  type Genre,
+  type RentalHistoryEntry,
+} from "../repositories/BookRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;

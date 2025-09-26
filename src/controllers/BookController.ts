@@ -31,25 +31,31 @@ export class BookController {
       // Parse genres if provided
       let genreList: string[] = [];
       if (genres) {
-        if (typeof genres === 'string') {
+        if (typeof genres === "string") {
           // Single genre or comma-separated string
-          genreList = genres.split(',').map(g => g.trim()).filter(g => g.length > 0);
+          genreList = genres
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
         } else if (Array.isArray(genres)) {
           // Array of genres
-          genreList = genres.filter(g => typeof g === 'string' && g.trim().length > 0);
+          genreList = genres.filter((g) => typeof g === "string" && g.trim().length > 0);
         }
       }
 
       console.log("Processed genres:", genreList);
 
-      await this.bookService.addBook({
-        Title,
-        Author,
-        ISBN,
-        PublicationYear: Number(PublicationYear),
-        Description: Description || "",
-      }, genreList);
-      
+      await this.bookService.addBook(
+        {
+          Title,
+          Author,
+          ISBN,
+          PublicationYear: Number(PublicationYear),
+          Description: Description || "",
+        },
+        genreList
+      );
+
       // After successful add, re-fetch books and render
       res.redirect("/books");
     } catch (error: unknown) {
@@ -126,25 +132,31 @@ export class BookController {
       // Parse genres if provided
       let genreList: string[] = [];
       if (genres) {
-        if (typeof genres === 'string') {
+        if (typeof genres === "string") {
           // Single genre or comma-separated string
-          genreList = genres.split(',').map(g => g.trim()).filter(g => g.length > 0);
+          genreList = genres
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
         } else if (Array.isArray(genres)) {
           // Array of genres
-          genreList = genres.filter(g => typeof g === 'string' && g.trim().length > 0);
+          genreList = genres.filter((g) => typeof g === "string" && g.trim().length > 0);
         }
       }
 
       console.log("Processed genres for edit:", genreList);
 
-      await this.bookService.editBook({
-        ISBN,
-        Title,
-        Author,
-        PublicationYear: Number(PublicationYear),
-        Description: Description || "",
-      }, genreList);
-      
+      await this.bookService.editBook(
+        {
+          ISBN,
+          Title,
+          Author,
+          PublicationYear: Number(PublicationYear),
+          Description: Description || "",
+        },
+        genreList
+      );
+
       res.redirect("/books");
     } catch (error: unknown) {
       console.error("Error editing book:", error);
@@ -218,13 +230,11 @@ export class BookController {
       });
     } catch (error) {
       console.error("Error in BookController.getBookDetails:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Error retrieving book details",
-          errors: [String(error)],
-        });
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving book details",
+        errors: [String(error)],
+      });
     }
   }
 
@@ -238,13 +248,11 @@ export class BookController {
       });
     } catch (error) {
       console.error("Error in BookController.getAllGenres:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Error retrieving genres",
-          errors: [String(error)],
-        });
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving genres",
+        errors: [String(error)],
+      });
     }
   }
 }
