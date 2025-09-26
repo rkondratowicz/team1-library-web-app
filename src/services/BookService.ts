@@ -1,5 +1,5 @@
 import type { Book } from "../models/Book.js";
-import { BookRepository, type RentalHistoryEntry } from "../repositories/BookRepository.js";
+import { BookRepository, type RentalHistoryEntry, type Genre } from "../repositories/BookRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;
@@ -29,12 +29,32 @@ export class BookService {
     return status;
   }
 
-  async addBook(book: Book): Promise<Book> {
-    return await this.bookRepository.create(book);
+  async addBook(book: Book, genres?: string[]): Promise<Book> {
+    if (genres && genres.length > 0) {
+      // Find or create genre IDs
+      const genreIds: number[] = [];
+      for (const genreName of genres) {
+        const genreId = await this.bookRepository.findOrCreateGenre(genreName);
+        genreIds.push(genreId);
+      }
+      return await this.bookRepository.createWithGenres(book, genreIds);
+    } else {
+      return await this.bookRepository.create(book);
+    }
   }
 
-  async editBook(book: Book): Promise<void> {
-    await this.bookRepository.update(book);
+  async editBook(book: Book, genres?: string[]): Promise<void> {
+    if (genres !== undefined) {
+      // Find or create genre IDs
+      const genreIds: number[] = [];
+      for (const genreName of genres) {
+        const genreId = await this.bookRepository.findOrCreateGenre(genreName);
+        genreIds.push(genreId);
+      }
+      await this.bookRepository.updateWithGenres(book, genreIds);
+    } else {
+      await this.bookRepository.update(book);
+    }
   }
 
   async searchBooks(searchTerm: string): Promise<Book[]> {
@@ -42,7 +62,11 @@ export class BookService {
   }
 
   async deleteBook(isbn: string): Promise<void> {
-    await this.bookRepository.delete(isbn);
+    await this.bookRepository.deleteWithCleanup(isbn);
+  }
+
+  async getAllGenres(): Promise<Genre[]> {
+    return await this.bookRepository.getAllGenres();
   }
 
   async getBookDetails(isbn: string): Promise<BookDetails | undefined> {
