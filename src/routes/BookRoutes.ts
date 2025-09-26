@@ -19,5 +19,6 @@ export function createBookRoutes(bookController: BookController): Router {
   // Delete book
   router.post("/books/delete", (req, res) => bookController.deleteBook(req, res));
 
+  router.get("/books/rentals", (req, res) => bookController.getRentals(req, res));
   return router;
 }

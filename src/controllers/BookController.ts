@@ -187,7 +187,16 @@ export class BookController {
       res.status(500).render("books", { books, errors: ["Error deleting book"] });
     }
   }
-
+  async getRentals(_req: Request, res: Response): Promise<void> {
+    try {
+      const rentals = await this.bookService.getRentals();
+      res.json({ success: true, data: rentals });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ success: false, message: "Error retrieving rentals", errors: [String(error)] });
+    }
+  }
   async searchBooks(req: Request, res: Response): Promise<void> {
     try {
       const searchTerm = req.query.q as string;

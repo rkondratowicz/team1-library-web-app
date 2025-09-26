@@ -135,6 +135,7 @@
                                         <i class="fas fa-book-open text-warning"></i>
                                         <span class="font-medium text-sm">Current Rentals:</span>
                                         <span id="rental-count" class="badge badge-warning">0</span>
+                                        <span class="text-xs text-base-content/50">/ 3 max</span>
                                     </div>
                                     <div id="current-rentals" class="text-sm text-base-content/70">
                                         No current rentals
@@ -295,6 +296,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- Book Returns Section -->
+        <div class="mt-6">
+            <div class="card bg-info/10 border-info/20 border shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl flex items-center gap-2">
+                        <i class="fas fa-undo text-info"></i>
+                        Book Returns
+                    </h2>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <p class="font-semibold">How to Return Books:</p>
+                            <p class="text-sm">Select a member to view their current rentals, then click the "Return" button next to any book to process the return. The book will be marked as available again.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                <i class="fas fa-clock text-warning"></i>
+                                Quick Return Tips:
+                            </h3>
+                            <ul class="text-sm space-y-1">
+                                <li>• Books are automatically marked as available when returned</li>
+                                <li>• Return date is automatically recorded</li>
+                                <li>• Members can immediately borrow new books after returning</li>
+                                <li>• Maximum of 3 books can be borrowed at once</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-success"></i>
+                                System Benefits:
+                            </h3>
+                            <ul class="text-sm space-y-1">
+                                <li>• Real-time availability updates</li>
+                                <li>• Automatic rental limit management</li>
+                                <li>• Complete rental history tracking</li>
+                                <li>• Instant confirmation of returns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Success Modal -->
@@ -324,6 +372,29 @@
             <p class="py-4" id="error-message">An error occurred while processing the borrowing.</p>
             <div class="modal-action">
                 <button type="button" class="btn btn-error" onclick="closeErrorModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Confirmation Modal -->
+    <div id="return-confirmation-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg text-warning flex items-center gap-2">
+                <i class="fas fa-undo"></i>
+                Confirm Book Return
+            </h3>
+            <div class="py-4">
+                <p class="mb-4">Are you sure you want to return this book?</p>
+                <div class="bg-base-200 rounded-lg p-3" id="return-book-details">
+                    <!-- Book details will be populated here -->
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeReturnModal()">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirm-return-btn">
+                    <i class="fas fa-undo mr-2"></i>
+                    Confirm Return
+                </button>
             </div>
         </div>
     </div>
@@ -374,6 +445,9 @@
 
         processBorrowingBtn.addEventListener('click', processBorrowing);
         clearAllBtn.addEventListener('click', clearAll);
+
+        // Return modal event listener
+        document.getElementById('confirm-return-btn').addEventListener('click', confirmReturn);
 
         // Member search functionality
         async function searchMembers() {
@@ -461,6 +535,7 @@
 
         function clearMemberSelection() {
             selectedMember = null;
+            memberRentals = [];
             selectedMemberDiv.classList.add('hidden');
             memberResults.classList.add('hidden');
             memberSearch.value = '';
@@ -593,9 +668,9 @@
                 errors.push('Please select a book');
             }
             
-            // Check if member already has a rental (based on our requirement of 1 book at a time)
-            if (selectedMember && hasActiveRental(selectedMember.id)) {
-                errors.push('This member already has an active rental. Only one book can be borrowed at a time.');
+            // Check if member already has maximum rentals (3 books limit)
+            if (selectedMember && memberRentals.length >= 3) {
+                errors.push('This member already has 3 active rentals. Maximum of 3 books can be borrowed at a time.');
             }
             
             if (errors.length > 0) {
@@ -621,18 +696,65 @@
             validationMessages.classList.remove('hidden');
         }
 
-        // Placeholder function for checking member rentals
-        function hasActiveRental(memberId) {
-            // This would normally make an API call to check active rentals
-            // For now, return false as placeholder
-            return false;
+        // Check if member has reached the maximum rental limit (3 books)
+        function hasReachedMaxRentals(memberId) {
+            return memberRentals.length >= 3;
         }
 
-        function checkMemberRentals(memberId) {
-            // Placeholder for checking current rentals
-            // This would make an API call to get current rentals
-            document.getElementById('rental-count').textContent = '0';
-            document.getElementById('current-rentals').textContent = 'No current rentals';
+        // Store member rentals for validation
+        let memberRentals = [];
+
+        async function checkMemberRentals(memberId) {
+            try {
+                const response = await fetch(`/api/members/${memberId}/rentals`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch member rentals');
+                }
+                
+                const result = await response.json();
+                memberRentals = result.data || [];
+                
+                const rentalCount = memberRentals.length;
+                document.getElementById('rental-count').textContent = rentalCount.toString();
+                
+                // Update badge color based on rental count
+                const rentalBadge = document.getElementById('rental-count');
+                rentalBadge.className = 'badge ' + (rentalCount >= 3 ? 'badge-error' : rentalCount >= 2 ? 'badge-warning' : 'badge-success');
+                
+                if (rentalCount === 0) {
+                    document.getElementById('current-rentals').textContent = 'No current rentals';
+                } else {
+                    // Create detailed rental cards with return buttons
+                    const rentalsHtml = memberRentals.map(rental => `
+                        <div class="bg-base-100 rounded-lg p-3 mb-2 border border-base-300">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-grow">
+                                    <div class="font-medium text-sm">${rental.Title}</div>
+                                    <div class="text-xs text-base-content/70">by ${rental.Author}</div>
+                                    <div class="text-xs text-base-content/50">ISBN: ${rental.ISBN}</div>
+                                </div>
+                                <button 
+                                    class="btn btn-error btn-xs ml-2" 
+                                    onclick="showReturnConfirmation(${selectedMember.id}, '${rental.ISBN}', '${rental.Title}', '${rental.Author}')"
+                                    title="Return this book"
+                                >
+                                    <i class="fas fa-undo mr-1"></i>Return
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('current-rentals').innerHTML = rentalsHtml;
+                }
+                
+                // Update validation since we now know about active rentals
+                validateTransaction();
+                
+            } catch (error) {
+                console.error('Error fetching member rentals:', error);
+                document.getElementById('rental-count').textContent = '?';
+                document.getElementById('current-rentals').textContent = 'Error loading rentals';
+                memberRentals = [];
+            }
         }
 
         async function processBorrowing() {
@@ -642,30 +764,141 @@
             }
 
             try {
-                // This would normally make an API call to create the rental
-                // Since no API development is required, we'll simulate success
+                // Update UI to show processing
+                processBorrowingBtn.disabled = true;
+                processBorrowingBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing...';
+                
                 console.log('Processing borrowing:', {
                     memberID: selectedMember.id,
-                    bookISBN: selectedBook.ISBN,
+                    bookTitle: selectedBook.Title,
                     member: selectedMember,
                     book: selectedBook
                 });
 
-                // Simulate API delay
-                processBorrowingBtn.disabled = true;
-                processBorrowingBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing...';
+                // Make actual API call to rent the book
+                const response = await fetch(`/api/members/${selectedMember.id}/rental/${encodeURIComponent(selectedBook.Title)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to process borrowing');
+                }
+
+                const result = await response.json();
+                console.log('Borrowing successful:', result);
                 
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Update member rentals display
+                await checkMemberRentals(selectedMember.id);
                 
                 showSuccessModal();
                 
             } catch (error) {
                 console.error('Error processing borrowing:', error);
-                showErrorModal('Failed to process borrowing. Please try again.');
+                showErrorModal(error.message || 'Failed to process borrowing. Please try again.');
             } finally {
                 processBorrowingBtn.disabled = false;
                 processBorrowingBtn.innerHTML = '<i class="fas fa-handshake mr-2"></i> Process Borrowing';
             }
+        }
+
+        // Store return details for the confirmation modal
+        let pendingReturn = null;
+
+        function showReturnConfirmation(memberId, bookISBN, bookTitle, bookAuthor) {
+            pendingReturn = {
+                memberId: memberId,
+                bookISBN: bookISBN,
+                bookTitle: bookTitle,
+                bookAuthor: bookAuthor
+            };
+
+            // Populate the modal with book details
+            document.getElementById('return-book-details').innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-16 bg-gradient-to-b from-warning to-warning-focus rounded flex items-center justify-center text-warning-content">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">${bookTitle}</div>
+                        <div class="text-sm opacity-75">by ${bookAuthor}</div>
+                        <div class="text-xs opacity-60">ISBN: ${bookISBN}</div>
+                    </div>
+                </div>
+            `;
+
+            // Show the modal
+            document.getElementById('return-confirmation-modal').classList.add('modal-open');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('return-confirmation-modal').classList.remove('modal-open');
+            pendingReturn = null;
+        }
+
+        async function confirmReturn() {
+            if (!pendingReturn) return;
+
+            const { memberId, bookISBN } = pendingReturn;
+
+            try {
+                console.log('Processing book return:', {
+                    memberID: memberId,
+                    bookISBN: bookISBN
+                });
+
+                // Update button to show loading
+                const confirmBtn = document.getElementById('confirm-return-btn');
+                const originalContent = confirmBtn.innerHTML;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Returning...';
+
+                const response = await fetch(`/api/members/${memberId}/return/${bookISBN}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to return book');
+                }
+
+                const result = await response.json();
+                console.log('Book return successful:', result);
+                
+                // Close the modal first
+                closeReturnModal();
+                
+                // Update member rentals display
+                await checkMemberRentals(memberId);
+                
+                // Show success message
+                showAlert('Book returned successfully!', 'success');
+                
+                // Update transaction validation
+                validateTransaction();
+                
+            } catch (error) {
+                console.error('Error returning book:', error);
+                showAlert(error.message || 'Failed to return book. Please try again.', 'error');
+                closeReturnModal();
+            } finally {
+                // Reset button
+                const confirmBtn = document.getElementById('confirm-return-btn');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-undo mr-2"></i>Confirm Return';
+            }
+        }
+
+        // Legacy function - keeping for backward compatibility but not using browser confirm
+        async function returnBook(memberId, bookISBN) {
+            // This should not be called anymore, but keeping as fallback
+            showReturnConfirmation(memberId, bookISBN, 'Unknown Book', 'Unknown Author');
         }
 
         function clearAll() {
@@ -694,20 +927,27 @@
 
         // Utility function
         function showAlert(message, type = 'info') {
-            const alertClass = type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-info';
-            const icon = type === 'error' ? 'fa-exclamation-triangle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+            const alertClass = type === 'error' ? 'alert-error' : 
+                             type === 'warning' ? 'alert-warning' : 
+                             type === 'success' ? 'alert-success' : 'alert-info';
+            const icon = type === 'error' ? 'fa-exclamation-triangle' : 
+                        type === 'warning' ? 'fa-exclamation-triangle' : 
+                        type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
             
             const alert = document.createElement('div');
-            alert.className = `alert ${alertClass} mb-4`;
+            alert.className = `alert ${alertClass} mb-4 fixed top-4 right-4 z-50 max-w-md`;
             alert.innerHTML = `
                 <i class="fas ${icon}"></i>
                 <span>${message}</span>
+                <button class="btn btn-ghost btn-sm ml-2" onclick="this.parentElement.remove()">×</button>
             `;
             
-            document.body.insertBefore(alert, document.body.firstChild);
+            document.body.appendChild(alert);
             
             setTimeout(() => {
-                alert.remove();
+                if (alert.parentElement) {
+                    alert.remove();
+                }
             }, 5000);
         }
     </script>

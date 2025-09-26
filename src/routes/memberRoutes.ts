@@ -20,12 +20,22 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // GET /api/members/:id
   router.get("/members/:id", (req, res) => memberController.getMemberById(req, res));
 
+  // Get member rentals
+  // GET /api/members/:id/rentals
+  router.get("/members/:id/rentals", (req, res) => memberController.getMemberRentals(req, res));
+
   // Update member by ID
   // PUT /api/members/:id
   router.put("/members/:id", (req, res) => memberController.updateMember(req, res));
 
   router.post("/members/:id/rental/:bookTitle", (req, res) => {
     memberController.rentBook(req, res);
+  });
+
+  // Return a book
+  // POST /api/members/:id/return/:bookISBN
+  router.post("/members/:id/return/:bookISBN", (req, res) => {
+    memberController.returnBook(req, res);
   });
 
   // Delete member by ID

@@ -42,12 +42,54 @@ export class MemberService {
     if (!member) {
       return { success: false, message: "Member not found" };
     }
+
+    // Check if member has reached the 3-book rental limit
+    const currentRentals = await this.memberRepository.getMemberRentals(memberID);
+    if (currentRentals.length >= 3) {
+      return { success: false, message: "Member has reached the maximum rental limit of 3 books" };
+    }
+
     try {
       await this.memberRepository.rentBook(memberID, bookISBN);
       return { success: true, message: "Book rented successfully" };
     } catch (err: unknown) {
       console.error("Error in rentBook service:", err);
       return { success: false, message: "Error renting book" };
+    }
+  }
+
+  async getMemberRentals(memberID: number): Promise<any[]> {
+    if (!memberID || memberID <= 0) {
+      throw new Error("Invalid member ID");
+    }
+    return await this.memberRepository.getMemberRentals(memberID);
+  }
+
+  async returnBook(
+    memberID: number,
+    bookISBN: string
+  ): Promise<{ success: boolean; message: string }> {
+    if (!memberID || memberID <= 0) {
+      return { success: false, message: "Invalid member ID" };
+    }
+    if (!bookISBN || bookISBN.trim().length === 0) {
+      return { success: false, message: "Invalid book ISBN" };
+    }
+
+    const member = await this.memberRepository.findById(memberID);
+    if (!member) {
+      return { success: false, message: "Member not found" };
+    }
+
+    try {
+      await this.memberRepository.returnBook(memberID, bookISBN);
+      return { success: true, message: "Book returned successfully" };
+    } catch (err: unknown) {
+      console.error("Error in returnBook service:", err);
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : "Error returning book",
+      };
     }
   }
 
