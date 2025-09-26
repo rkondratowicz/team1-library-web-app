@@ -1,3 +1,5 @@
+import type { Copy } from "./Copy.js";
+
 export interface Book {
   ISBN: string;
   Title: string;
@@ -6,8 +8,9 @@ export interface Book {
   Description: string;
   available?: number;
   genres?: string[];
-  totalCopies?: number; // Future support for multiple copies
-  availableCopies?: number; // Future support for multiple copies
+  totalCopies?: number; // Support for multiple copies
+  availableCopies?: number; // Support for multiple copies
+  copies?: Copy[]; // Array of individual copies
 }
 
 export interface BookCopy {
