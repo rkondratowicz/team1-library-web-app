@@ -138,6 +138,9 @@
                                 <i class="fas fa-calendar mr-2"></i>Year
                             </th>
                             <th class="text-base-content font-bold">
+                                <i class="fas fa-tags mr-2"></i>Genres
+                            </th>
+                            <th class="text-base-content font-bold">
                                 <i class="fas fa-info-circle mr-2"></i>Description
                             </th>
                             <th class="text-base-content font-bold">
@@ -500,6 +503,11 @@
                 (book.Description.length > 100 ? book.Description.substring(0, 100) + '...' : book.Description) : 
                 'No description available';
             
+            // Format genres as badges
+            const genreBadges = book.genres && book.genres.length > 0 
+                ? book.genres.map(genre => `<span class="badge badge-secondary badge-sm">${genre}</span>`).join(' ')
+                : '<span class="badge badge-ghost badge-sm">No genres</span>';
+            
             return `
                 <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-base-300">
                     <div class="card-body">
@@ -519,6 +527,15 @@
                         <p class="text-base-content/80 font-medium mb-2">
                             <i class="fas fa-user mr-2 text-secondary"></i>${book.Author}
                         </p>
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-tags text-accent text-sm"></i>
+                                <span class="text-sm text-base-content/70 font-medium">Genres:</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${genreBadges}
+                            </div>
+                        </div>
                         <p class="text-base-content/60 text-sm mb-4">${description}</p>
                         <div class="card-actions justify-between items-center">
                             <div class="text-xs text-base-content/50">
@@ -543,12 +560,23 @@
                 (book.Description.length > 50 ? book.Description.substring(0, 50) + '...' : book.Description) : 
                 'No description';
             
+            // Format genres as compact badges for table view
+            const genreBadges = book.genres && book.genres.length > 0 
+                ? book.genres.slice(0, 2).map(genre => `<span class="badge badge-secondary badge-xs">${genre}</span>`).join(' ') +
+                  (book.genres.length > 2 ? ` <span class="badge badge-ghost badge-xs">+${book.genres.length - 2}</span>` : '')
+                : '<span class="badge badge-ghost badge-xs">None</span>';
+            
             return `
                 <tr class="hover">
                     <td class="font-semibold">${book.Title}</td>
                     <td>${book.Author}</td>
                     <td>
                         <div class="badge badge-primary badge-outline">${book.PublicationYear || 'Unknown'}</div>
+                    </td>
+                    <td class="max-w-xs">
+                        <div class="flex flex-wrap gap-1">
+                            ${genreBadges}
+                        </div>
                     </td>
                     <td class="max-w-xs truncate">${description}</td>
                     <td>
@@ -590,6 +618,7 @@
                 book.Title.toLowerCase().includes(searchTerm) ||
                 book.Author.toLowerCase().includes(searchTerm) ||
                 (book.Description && book.Description.toLowerCase().includes(searchTerm)) ||
+                (book.genres && book.genres.some(genre => genre.toLowerCase().includes(searchTerm))) ||
                 book.ISBN.includes(searchTerm)
             );
             
