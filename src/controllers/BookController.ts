@@ -141,8 +141,8 @@ export class BookController {
       res.status(500).render("books", { books, errors: ["Error deleting book"] });
     }
   }
-  async getRentals(req:Request,res:Response):Promise<void>{
-    try{
+  async getRentals(_req: Request, res: Response): Promise<void> {
+    try {
       const rentals = await this.bookService.getRentals();
       res.json({ success: true, data: rentals });
     } catch (error) {

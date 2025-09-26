@@ -28,7 +28,7 @@ export class BookService {
     }
     return status;
   }
-  async getRentals():Promise<Book[]>{
+  async getRentals(): Promise<Book[]> {
     return await this.bookRepository.getRentals();
   }
   async addBook(book: Book): Promise<Book> {
