@@ -45,9 +45,10 @@ export class BookService {
     } else {
       return await this.bookRepository.create(book);
     }
-  async getRentals(): Promise<Book[]> {
-    return await this.bookRepository.getRentals();
   }
+
+  async getRentals(): Promise<RentalHistoryEntry[]> {
+    return await this.bookRepository.getRentals();
   }
 
   async editBook(book: Book, genres?: string[]): Promise<void> {

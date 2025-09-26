@@ -69,7 +69,7 @@ export class MemberRepository {
     });
   }
 
-  getMemberRentals(memberID: number): Promise<any[]> {
+  getMemberRentals(memberID: number): Promise<MemberRentalData[]> {
     return new Promise((resolve, reject) => {
       const sql = `
         SELECT r.*, b.Title, b.Author, b.ISBN
@@ -77,7 +77,7 @@ export class MemberRepository {
         JOIN books b ON r.bookISBN = b.ISBN
         WHERE r.memberID = ? AND (r.returned IS NULL OR r.returned = 0)
       `;
-      this.db.all(sql, [memberID], (err: unknown, rows: any[]) => {
+      this.db.all(sql, [memberID], (err: unknown, rows: MemberRentalData[]) => {
         if (err) return reject(err);
         resolve(rows);
       });
@@ -93,28 +93,32 @@ export class MemberRepository {
         LIMIT 1
       `;
 
-      this.db.get(checkSql, [memberID, bookISBN], (err: unknown, row: any) => {
-        if (err) return reject(err);
-        if (!row) return reject(new Error("No active rental found for this book"));
+      this.db.get(
+        checkSql,
+        [memberID, bookISBN],
+        (err: unknown, row: RentalLookupRow | undefined) => {
+          if (err) return reject(err);
+          if (!row) return reject(new Error("No active rental found for this book"));
 
-        // Update the rental as returned
-        const updateRentalSql = `
+          // Update the rental as returned
+          const updateRentalSql = `
           UPDATE rentals 
           SET returned = 1, returnedDate = CURRENT_TIMESTAMP 
           WHERE rentalID = ?
         `;
 
-        this.db.run(updateRentalSql, [row.rentalID], (err: Error | null) => {
-          if (err) return reject(err);
-
-          // Increase book availability
-          const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
-          this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+          this.db.run(updateRentalSql, [row.rentalID], (err: Error | null) => {
             if (err) return reject(err);
-            resolve();
+
+            // Increase book availability
+            const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
+            this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+              if (err) return reject(err);
+              resolve();
+            });
           });
-        });
-      });
+        }
+      );
     });
   }
 
@@ -194,4 +198,22 @@ export class MemberRepository {
       });
     });
   }
+}
+
+// Interface for member rental data returned from getMemberRentals query
+export interface MemberRentalData {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: number;
+  RentalDate: string;
+  returnedDate?: string;
+  Title: string;
+  Author: string;
+  ISBN: string;
+}
+
+// Interface for rental lookup row in returnBook method
+export interface RentalLookupRow {
+  rentalID: number;
 }

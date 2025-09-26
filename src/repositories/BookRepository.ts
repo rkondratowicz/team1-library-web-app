@@ -42,16 +42,28 @@ export class BookRepository {
       });
     });
   }
-  getRentals(): Promise<Book[]> {
+  getRentals(): Promise<RentalHistoryEntry[]> {
     return new Promise((resolve, reject) => {
       this.db.all(
-        `SELECT m.id,m.fname,m.Sname, m.email , b.ISBN,b.Title, b.Author 
-        FROM members as m 
-        JOIN rentals as r on m.id=r.memberID 
-        join books as b on r.bookISBN=b.ISBN order by r.rentalDate desc ;`,
-        (err: unknown, rows: Book[]) => {
+        `SELECT r.rentalID, r.memberID, r.bookISBN, r.returned, r.rentalDate, r.returnedDate,
+         (m.Fname || ' ' || m.Sname) as memberName, m.email as memberEmail
+        FROM rentals as r 
+        JOIN members as m ON r.memberID = m.id 
+        JOIN books as b ON r.bookISBN = b.ISBN 
+        ORDER BY r.rentalDate DESC`,
+        (err: unknown, rows: RentalHistoryRow[]) => {
           if (err) return reject(err);
-          resolve(rows);
+          const rentals: RentalHistoryEntry[] = rows.map((row) => ({
+            rentalID: row.rentalID,
+            memberID: row.memberID,
+            bookISBN: row.bookISBN,
+            returned: Boolean(row.returned),
+            rentalDate: row.RentalDate,
+            returnedDate: row.returnedDate,
+            memberName: row.memberName,
+            memberEmail: row.memberEmail,
+          }));
+          resolve(rentals);
         }
       );
     });
