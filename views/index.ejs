@@ -22,6 +22,7 @@
                     <li><a href="/books" class="text-primary-content"><i class="fas fa-book mr-2"></i>Books</a></li>
                     <li><a href="/members" class="text-primary-content"><i class="fas fa-users mr-2"></i>Members</a></li>
                     <li><a href="/borrowing" class="text-primary-content"><i class="fas fa-exchange-alt mr-2"></i>Borrowing</a></li>
+                    <li><a href="/analytics" class="text-primary-content"><i class="fas fa-chart-line mr-2"></i>Analytics</a></li>
                 </ul>
             </div>
             <a href="/" class="btn btn-ghost text-xl">
@@ -35,6 +36,7 @@
                 <li><a href="/books" class="text-primary-content"><i class="fas fa-book mr-2"></i>Books</a></li>
                 <li><a href="/members" class="text-primary-content"><i class="fas fa-users mr-2"></i>Members</a></li>
                 <li><a href="/borrowing" class="text-primary-content"><i class="fas fa-exchange-alt mr-2"></i>Borrowing</a></li>
+                <li><a href="/analytics" class="text-primary-content"><i class="fas fa-chart-line mr-2"></i>Analytics</a></li>
             </ul>
         </div>
         <div class="navbar-end">
@@ -137,7 +139,7 @@
                         <i class="fas fa-book text-3xl"></i>
                     </div>
                     <div class="stat-title">Total Books</div>
-                    <div class="stat-value text-primary" id="totalBooks">Loading...</div>
+                    <div class="stat-value text-primary"><%= stats.totalBooks %></div>
                     <div class="stat-desc">In the catalog</div>
                 </div>
                 
@@ -146,7 +148,7 @@
                         <i class="fas fa-users text-3xl"></i>
                     </div>
                     <div class="stat-title">Active Members</div>
-                    <div class="stat-value text-secondary" id="totalMembers">Loading...</div>
+                    <div class="stat-value text-secondary"><%= stats.totalMembers %></div>
                     <div class="stat-desc">Registered users</div>
                 </div>
                 
@@ -155,7 +157,7 @@
                         <i class="fas fa-hand-holding text-3xl"></i>
                     </div>
                     <div class="stat-title">Books Borrowed</div>
-                    <div class="stat-value text-accent" id="borrowedBooks">Loading...</div>
+                    <div class="stat-value text-accent"><%= stats.booksCurrentlyBorrowed %></div>
                     <div class="stat-desc">Currently on loan</div>
                 </div>
                 
@@ -164,7 +166,7 @@
                         <i class="fas fa-check-circle text-3xl"></i>
                     </div>
                     <div class="stat-title">Available Books</div>
-                    <div class="stat-value text-info" id="availableBooks">Loading...</div>
+                    <div class="stat-value text-info"><%= stats.availableBooks %></div>
                     <div class="stat-desc">Ready to borrow</div>
                 </div>
             </div>
@@ -196,39 +198,27 @@
             document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Load statistics
-        async function loadStatistics() {
+        // Statistics are now server-side rendered, but we can still provide
+        // real-time updates if needed via the analytics API endpoints
+        async function refreshStatistics() {
             try {
-                // Load total books count
-                const booksResponse = await fetch('/api/books');
-                if (booksResponse.ok) {
-                    const books = await booksResponse.json();
-                    document.getElementById('totalBooks').textContent = Array.isArray(books) ? books.length : books.data?.length || '0';
+                const response = await fetch('/api/analytics/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    // Update the displayed values if we want real-time updates
+                    document.querySelector('.stat-value.text-primary').textContent = stats.totalBooks;
+                    document.querySelector('.stat-value.text-secondary').textContent = stats.totalMembers;
+                    document.querySelector('.stat-value.text-accent').textContent = stats.booksCurrentlyBorrowed;
+                    document.querySelector('.stat-value.text-info').textContent = stats.availableBooks;
                 }
-
-                // Load members count
-                const membersResponse = await fetch('/api/members');
-                if (membersResponse.ok) {
-                    const members = await membersResponse.json();
-                    document.getElementById('totalMembers').textContent = Array.isArray(members) ? members.length : members.data?.length || '0';
-                }
-
-                // For now, set placeholder values for borrowed and available books
-                // These would need actual API endpoints
-                document.getElementById('borrowedBooks').textContent = '0';
-                document.getElementById('availableBooks').textContent = '0';
             } catch (error) {
-                console.error('Error loading statistics:', error);
-                // Set fallback values
-                document.getElementById('totalBooks').textContent = '0';
-                document.getElementById('totalMembers').textContent = '0';
-                document.getElementById('borrowedBooks').textContent = '0';
-                document.getElementById('availableBooks').textContent = '0';
+                console.error('Error refreshing statistics:', error);
             }
         }
 
-        // Load statistics on page load
-        document.addEventListener('DOMContentLoaded', loadStatistics);
+        // Optional: Auto-refresh every 30 seconds for real-time updates
+        // Uncomment if you want live updates
+        // setInterval(refreshStatistics, 30000);
     </script>
 </body>
 </html>

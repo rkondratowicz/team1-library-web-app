@@ -1,6 +1,6 @@
 import type { MemberRental } from "../models/Copy.js";
 import type { CreateMemberRequest, Member } from "../models/member.js";
-import { MemberRepository } from "../repositories/memberRepository.js";
+import { type MemberRentalData, MemberRepository } from "../repositories/memberRepository.js";
 
 export class MemberService {
   private memberRepository: MemberRepository;
@@ -89,6 +89,7 @@ export class MemberService {
   }
 
   async getMemberRentals(memberID: number): Promise<MemberRental[]> {
+
     if (!memberID || memberID <= 0) {
       throw new Error("Invalid member ID");
     }

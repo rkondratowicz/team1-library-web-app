@@ -94,6 +94,7 @@ export class MemberRepository {
     });
   }
 
+
   getMemberRentals(memberID: number): Promise<MemberRental[]> {
     return new Promise((resolve, reject) => {
       const sql = `
@@ -103,6 +104,7 @@ export class MemberRepository {
         JOIN books b ON c.bookISBN = b.ISBN
         WHERE r.memberID = ? AND (r.returned IS NULL OR r.returned = 0)
       `;
+
       this.db.all(sql, [memberID], (err: unknown, rows: MemberRental[]) => {
         if (err) return reject(err);
         resolve(rows);
@@ -123,8 +125,8 @@ export class MemberRepository {
         if (err) return reject(err);
         if (!row) return reject(new Error("No active rental found for this copy"));
 
-        // Update the rental as returned
-        const updateRentalSql = `
+          // Update the rental as returned
+          const updateRentalSql = `
           UPDATE rentals 
           SET returned = 1, returnedDate = CURRENT_TIMESTAMP 
           WHERE rentalID = ?
@@ -136,11 +138,18 @@ export class MemberRepository {
           // Mark copy as available again
           const updateCopySql = `UPDATE copy SET Available = 1 WHERE copyID = ?`;
           this.db.run(updateCopySql, [copyID], (err: Error | null) => {
+
             if (err) return reject(err);
-            resolve();
+
+            // Increase book availability
+            const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
+            this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+              if (err) return reject(err);
+              resolve();
+            });
           });
-        });
-      });
+        }
+      );
     });
   }
 
@@ -247,4 +256,22 @@ export class MemberRepository {
       });
     });
   }
+}
+
+// Interface for member rental data returned from getMemberRentals query
+export interface MemberRentalData {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: number;
+  RentalDate: string;
+  returnedDate?: string;
+  Title: string;
+  Author: string;
+  ISBN: string;
+}
+
+// Interface for rental lookup row in returnBook method
+export interface RentalLookupRow {
+  rentalID: number;
 }
