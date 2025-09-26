@@ -112,3 +112,6 @@ ecosystem.config.js
 
 # Database files
 *.db
+
+#Personal notes
+Notes.md
