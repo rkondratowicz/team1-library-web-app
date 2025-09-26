@@ -84,6 +84,40 @@ export class MemberRepository {
     });
   }
 
+  returnBook(memberID: number, bookISBN: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // First, check if there's an active rental
+      const checkSql = `
+        SELECT rentalID FROM rentals 
+        WHERE memberID = ? AND bookISBN = ? AND (returned IS NULL OR returned = 0)
+        LIMIT 1
+      `;
+
+      this.db.get(checkSql, [memberID, bookISBN], (err: unknown, row: any) => {
+        if (err) return reject(err);
+        if (!row) return reject(new Error("No active rental found for this book"));
+
+        // Update the rental as returned
+        const updateRentalSql = `
+          UPDATE rentals 
+          SET returned = 1, returnedDate = CURRENT_TIMESTAMP 
+          WHERE rentalID = ?
+        `;
+
+        this.db.run(updateRentalSql, [row.rentalID], (err: Error | null) => {
+          if (err) return reject(err);
+
+          // Increase book availability
+          const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
+          this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+            if (err) return reject(err);
+            resolve();
+          });
+        });
+      });
+    });
+  }
+
   create(member: CreateMemberRequest): Promise<number> {
     return new Promise((resolve, reject) => {
       const sql = `
