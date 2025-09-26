@@ -173,9 +173,11 @@ export class BookController {
       const booksWithCopies = await this.bookService.getAllBooksWithCopies();
       res.json({ success: true, data: booksWithCopies });
     } catch (error) {
-      res
-        .status(500)
-        .json({ success: false, message: "Error retrieving books with copies", errors: [String(error)] });
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving books with copies",
+        errors: [String(error)],
+      });
     }
   }
 
@@ -183,10 +185,10 @@ export class BookController {
     try {
       const booksWithCopies = await this.bookService.getAllBooksWithCopies();
       res.render("books", { booksWithCopies: booksWithCopies });
-    } catch (error) {
-      res.status(500).render("books", { 
-        booksWithCopies: [], 
-        errors: ["Error retrieving books with copies"] 
+    } catch (_error) {
+      res.status(500).render("books", {
+        booksWithCopies: [],
+        errors: ["Error retrieving books with copies"],
       });
     }
   }

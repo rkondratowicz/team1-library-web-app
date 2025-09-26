@@ -29,3 +29,56 @@ export interface AvailableCopySummary {
   availableCopies: number;
   copies: Copy[];
 }
+
+export interface RentalWithCopyInfo {
+  id: number;
+  fname: string;
+  Sname: string;
+  email: string;
+  ISBN: string;
+  Title: string;
+  Author: string;
+  copyID: number;
+  rentalID: number;
+  RentalDate: string;
+  copyAvailable: number;
+}
+
+export interface MemberRental {
+  rentalID: number;
+  memberID: number;
+  copyID: number;
+  returned: number;
+  RentalDate: string;
+  returnedDate?: string;
+  Title: string;
+  Author: string;
+  ISBN: string;
+}
+
+export interface CopyAvailabilityRow {
+  Available: number;
+}
+
+export interface CopyIDRow {
+  copyID: number;
+}
+
+export interface RentalIDRow {
+  rentalID: number;
+}
+
+export interface RentalWithCopyIDRow {
+  rentalID: number;
+  copyID: number;
+}
+
+export interface BookCopySummaryRow {
+  bookISBN: string;
+  Title: string;
+  Author: string;
+  PublicationYear?: number;
+  Description?: string;
+  totalCopies: number;
+  availableCopies: number;
+}

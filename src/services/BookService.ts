@@ -1,5 +1,5 @@
 import type { Book } from "../models/Book.js";
-import type { AvailableCopySummary, Copy } from "../models/Copy.js";
+import type { AvailableCopySummary, Copy, RentalWithCopyInfo } from "../models/Copy.js";
 import { BookRepository } from "../repositories/BookRepository.js";
 import { CopyRepository } from "../repositories/CopyRepository.js";
 
@@ -34,7 +34,7 @@ export class BookService {
   async bookAvailable(bookTitle: string): Promise<boolean> {
     const book = await this.bookRepository.findByTitle(bookTitle);
     if (!book) return false;
-    
+
     const availableCopies = await this.copyRepository.findAvailableByISBN(book.ISBN);
     return availableCopies.length > 0;
   }
@@ -43,7 +43,7 @@ export class BookService {
   async copyAvailable(copyID: number): Promise<boolean> {
     return await this.copyRepository.isAvailable(copyID);
   }
-  async getRentals(): Promise<any[]> {
+  async getRentals(): Promise<RentalWithCopyInfo[]> {
     return await this.bookRepository.getRentals();
   }
   async addBook(book: Book): Promise<Book> {

@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
 import type { Book } from "../models/Book.js";
+import type { RentalWithCopyInfo } from "../models/Copy.js";
 
 export class BookRepository {
   private db: sqlite3.Database;
@@ -42,7 +43,7 @@ export class BookRepository {
       });
     });
   }
-  getRentals(): Promise<any[]> {
+  getRentals(): Promise<RentalWithCopyInfo[]> {
     return new Promise((resolve, reject) => {
       const sql = `
         SELECT m.id, m.fname, m.Sname, m.email, 
@@ -56,7 +57,7 @@ export class BookRepository {
         WHERE r.returned = 0 OR r.returned IS NULL
         ORDER BY r.RentalDate desc
       `;
-      this.db.all(sql, (err: unknown, rows: any[]) => {
+      this.db.all(sql, (err: unknown, rows: RentalWithCopyInfo[]) => {
         if (err) return reject(err);
         resolve(rows);
       });

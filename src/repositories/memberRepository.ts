@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
+import type { CopyIDRow, MemberRental, RentalIDRow, RentalWithCopyIDRow } from "../models/Copy.js";
 import type { CreateMemberRequest, Member } from "../models/member.js";
 
 export class MemberRepository {
@@ -66,9 +67,13 @@ export class MemberRepository {
         resolve();
       });
       // Update copy availability to 0 (not available)
-      this.db.run(`UPDATE copy SET Available = 0 WHERE copyID = ?`, [copyID], (err: Error | null) => {
-        if (err) return reject(err);
-      });
+      this.db.run(
+        `UPDATE copy SET Available = 0 WHERE copyID = ?`,
+        [copyID],
+        (err: Error | null) => {
+          if (err) return reject(err);
+        }
+      );
     });
   }
 
@@ -77,10 +82,10 @@ export class MemberRepository {
     return new Promise((resolve, reject) => {
       // Find first available copy of the book
       const findCopySql = `SELECT copyID FROM copy WHERE bookISBN = ? AND Available = 1 LIMIT 1`;
-      this.db.get(findCopySql, [bookISBN], (err: unknown, row: any) => {
+      this.db.get(findCopySql, [bookISBN], (err: unknown, row: CopyIDRow | undefined) => {
         if (err) return reject(err);
         if (!row) return reject(new Error("No available copies for this book"));
-        
+
         // Rent the found copy
         this.rentCopy(memberID, row.copyID)
           .then(() => resolve())
@@ -89,7 +94,7 @@ export class MemberRepository {
     });
   }
 
-  getMemberRentals(memberID: number): Promise<any[]> {
+  getMemberRentals(memberID: number): Promise<MemberRental[]> {
     return new Promise((resolve, reject) => {
       const sql = `
         SELECT r.*, c.copyID, b.Title, b.Author, b.ISBN
@@ -98,7 +103,7 @@ export class MemberRepository {
         JOIN books b ON c.bookISBN = b.ISBN
         WHERE r.memberID = ? AND (r.returned IS NULL OR r.returned = 0)
       `;
-      this.db.all(sql, [memberID], (err: unknown, rows: any[]) => {
+      this.db.all(sql, [memberID], (err: unknown, rows: MemberRental[]) => {
         if (err) return reject(err);
         resolve(rows);
       });
@@ -114,7 +119,7 @@ export class MemberRepository {
         LIMIT 1
       `;
 
-      this.db.get(checkSql, [memberID, copyID], (err: unknown, row: any) => {
+      this.db.get(checkSql, [memberID, copyID], (err: unknown, row: RentalIDRow | undefined) => {
         if (err) return reject(err);
         if (!row) return reject(new Error("No active rental found for this copy"));
 
@@ -150,15 +155,19 @@ export class MemberRepository {
         LIMIT 1
       `;
 
-      this.db.get(findRentalSql, [memberID, bookISBN], (err: unknown, row: any) => {
-        if (err) return reject(err);
-        if (!row) return reject(new Error("No active rental found for this book"));
+      this.db.get(
+        findRentalSql,
+        [memberID, bookISBN],
+        (err: unknown, row: RentalWithCopyIDRow | undefined) => {
+          if (err) return reject(err);
+          if (!row) return reject(new Error("No active rental found for this book"));
 
-        // Return the specific copy
-        this.returnCopy(memberID, row.copyID)
-          .then(() => resolve())
-          .catch((error) => reject(error));
-      });
+          // Return the specific copy
+          this.returnCopy(memberID, row.copyID)
+            .then(() => resolve())
+            .catch((error) => reject(error));
+        }
+      );
     });
   }
 

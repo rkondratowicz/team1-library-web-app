@@ -19,12 +19,12 @@ export class MemberController {
 
       const memberId = parseInt(req.params.id, 10);
       const copyId = parseInt(req.params.copyId, 10);
-      
+
       if (Number.isNaN(memberId)) {
         res.status(400).json({ error: "Invalid member ID" });
         return;
       }
-      
+
       if (Number.isNaN(copyId)) {
         res.status(400).json({ error: "Invalid copy ID" });
         return;

@@ -1,3 +1,4 @@
+import type { MemberRental } from "../models/Copy.js";
 import type { CreateMemberRequest, Member } from "../models/member.js";
 import { MemberRepository } from "../repositories/memberRepository.js";
 
@@ -28,17 +29,14 @@ export class MemberService {
     return await this.memberRepository.search(trimmedQuery);
   }
 
-  async rentCopy(
-    memberID: number,
-    copyID: number
-  ): Promise<{ success: boolean; message: string }> {
+  async rentCopy(memberID: number, copyID: number): Promise<{ success: boolean; message: string }> {
     if (!memberID || memberID <= 0) {
       return { success: false, message: "Invalid member ID" };
     }
     if (!copyID || copyID <= 0) {
       return { success: false, message: "Invalid copy ID" };
     }
-    
+
     const member = await this.memberRepository.findById(memberID);
     if (!member) {
       return { success: false, message: "Member not found" };
@@ -90,7 +88,7 @@ export class MemberService {
     }
   }
 
-  async getMemberRentals(memberID: number): Promise<any[]> {
+  async getMemberRentals(memberID: number): Promise<MemberRental[]> {
     if (!memberID || memberID <= 0) {
       throw new Error("Invalid member ID");
     }

@@ -1,6 +1,13 @@
-import sqlite3 from 'sqlite3';
-import { DATABASE_PATH } from '../config/database.js';
-import type { Copy, CreateCopyRequest, CopyWithBookDetails, AvailableCopySummary } from '../models/Copy.js';
+import sqlite3 from "sqlite3";
+import { DATABASE_PATH } from "../config/database.js";
+import type {
+  AvailableCopySummary,
+  BookCopySummaryRow,
+  Copy,
+  CopyAvailabilityRow,
+  CopyWithBookDetails,
+  CreateCopyRequest,
+} from "../models/Copy.js";
 
 export class CopyRepository {
   private db: sqlite3.Database;
@@ -71,10 +78,10 @@ export class CopyRepository {
         GROUP BY b.ISBN, b.Title, b.Author, b.PublicationYear, b.Description
         ORDER BY b.Title
       `;
-      
-      this.db.all(sql, [], async (err: unknown, rows: any[]) => {
+
+      this.db.all(sql, [], async (err: unknown, rows: BookCopySummaryRow[]) => {
         if (err) return reject(err);
-        
+
         try {
           // For each book, get its individual copies
           const booksWithCopies = await Promise.all(
@@ -88,7 +95,7 @@ export class CopyRepository {
                 Description: row.Description,
                 totalCopies: row.totalCopies || 0,
                 availableCopies: row.availableCopies || 0,
-                copies: copies
+                copies: copies,
               };
             })
           );
@@ -116,17 +123,21 @@ export class CopyRepository {
     return new Promise((resolve, reject) => {
       const sql = `INSERT INTO copy (bookISBN, Available) VALUES (?, ?)`;
       const available = copyData.Available ?? 1;
-      
-      this.db.run(sql, [copyData.bookISBN, available], function (this: sqlite3.RunResult, err: Error | null) {
-        if (err) return reject(err);
-        
-        const newCopy: Copy = {
-          copyID: this.lastID,
-          bookISBN: copyData.bookISBN,
-          Available: available
-        };
-        resolve(newCopy);
-      });
+
+      this.db.run(
+        sql,
+        [copyData.bookISBN, available],
+        function (this: sqlite3.RunResult, err: Error | null) {
+          if (err) return reject(err);
+
+          const newCopy: Copy = {
+            copyID: this.lastID,
+            bookISBN: copyData.bookISBN,
+            Available: available,
+          };
+          resolve(newCopy);
+        }
+      );
     });
   }
 
@@ -145,7 +156,7 @@ export class CopyRepository {
   isAvailable(copyID: number): Promise<boolean> {
     return new Promise((resolve, reject) => {
       const sql = `SELECT Available FROM copy WHERE copyID = ?`;
-      this.db.get(sql, [copyID], (err: unknown, row: any) => {
+      this.db.get(sql, [copyID], (err: unknown, row: CopyAvailabilityRow | undefined) => {
         if (err) return reject(err);
         if (!row) return resolve(false);
         resolve(row.Available === 1);
