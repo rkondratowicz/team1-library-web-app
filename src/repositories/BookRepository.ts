@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
 import type { Book } from "../models/Book.js";
+import type { RentalWithCopyInfo } from "../models/Copy.js";
 
 export class BookRepository {
   private db: sqlite3.Database;
@@ -42,30 +43,25 @@ export class BookRepository {
       });
     });
   }
-  getRentals(): Promise<RentalHistoryEntry[]> {
+
+  getRentals(): Promise<RentalWithCopyInfo[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(
-        `SELECT r.rentalID, r.memberID, r.bookISBN, r.returned, r.rentalDate, r.returnedDate,
-         (m.Fname || ' ' || m.Sname) as memberName, m.email as memberEmail
-        FROM rentals as r 
-        JOIN members as m ON r.memberID = m.id 
-        JOIN books as b ON r.bookISBN = b.ISBN 
-        ORDER BY r.rentalDate DESC`,
-        (err: unknown, rows: RentalHistoryRow[]) => {
-          if (err) return reject(err);
-          const rentals: RentalHistoryEntry[] = rows.map((row) => ({
-            rentalID: row.rentalID,
-            memberID: row.memberID,
-            bookISBN: row.bookISBN,
-            returned: Boolean(row.returned),
-            rentalDate: row.RentalDate,
-            returnedDate: row.returnedDate,
-            memberName: row.memberName,
-            memberEmail: row.memberEmail,
-          }));
-          resolve(rentals);
-        }
-      );
+      const sql = `
+        SELECT m.id, m.fname, m.Sname, m.email, 
+               b.ISBN, b.Title, b.Author,
+               r.copyID, r.rentalID, r.RentalDate,
+               c.Available as copyAvailable
+        FROM members as m 
+        JOIN rentals as r on m.id = r.memberID 
+        JOIN copy as c on r.copyID = c.copyID
+        JOIN books as b on c.bookISBN = b.ISBN 
+        WHERE r.returned = 0 OR r.returned IS NULL
+        ORDER BY r.RentalDate desc
+      `;
+      this.db.all(sql, (err: unknown, rows: RentalWithCopyInfo[]) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
     });
   }
   findByTitle(title: string): Promise<Book | undefined> {

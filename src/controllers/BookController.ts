@@ -214,6 +214,18 @@ export class BookController {
     }
   }
 
+  async getAllBooksWithCopies(_req: Request, res: Response): Promise<void> {
+    try {
+      const booksWithCopies = await this.bookService.getAllBooksWithCopies();
+      res.json({ success: true, data: booksWithCopies });
+    } catch (_error) {
+      res.status(500).json({
+        success: false,
+        message: "Error retrieving books with copies",
+      });
+    }
+  }
+
   async getBookDetails(req: Request, res: Response): Promise<void> {
     try {
       const isbn = req.params.isbn;
@@ -243,6 +255,18 @@ export class BookController {
         success: false,
         message: "Error retrieving book details",
         errors: [String(error)],
+      });
+    }
+  }
+
+  async getBooksWithCopiesView(_req: Request, res: Response): Promise<void> {
+    try {
+      const booksWithCopies = await this.bookService.getAllBooksWithCopies();
+      res.render("books", { booksWithCopies: booksWithCopies });
+    } catch (_error) {
+      res.status(500).render("books", {
+        booksWithCopies: [],
+        errors: ["Error retrieving books with copies"],
       });
     }
   }

@@ -888,6 +888,15 @@
                         showBookDetails(isbn);
                     }
                 }
+
+                // Handle rent copy button clicks
+                if (e.target.closest('.rent-copy-btn')) {
+                    e.preventDefault();
+                    const btn = e.target.closest('.rent-copy-btn');
+                    const copyId = btn.getAttribute('data-copy-id');
+                    const isbn = btn.getAttribute('data-isbn');
+                    showRentCopyModal(copyId, isbn);
+                }
             });
         }
 
@@ -1081,7 +1090,7 @@
 
         async function loadBooks() {
             try {
-                const response = await fetch('/api/books');
+                const response = await fetch('/api/books-with-copies');
                 if (response.ok) {
                     const data = await response.json();
                     allBooks = Array.isArray(data) ? data : (data.data || []);
@@ -1130,10 +1139,34 @@
                 (book.Description.length > 100 ? book.Description.substring(0, 100) + '...' : book.Description) : 
                 'No description available';
             
-            // Format genres as badges
+            // Format genres as badges - handle both old format (genres array) and new format 
             const genreBadges = book.genres && book.genres.length > 0 
                 ? book.genres.map(genre => `<span class="badge badge-secondary badge-sm">${genre}</span>`).join(' ')
                 : '<span class="badge badge-ghost badge-sm">No genres</span>';
+            
+            // Create copies section
+            const availableCopies = book.availableCopies || 0;
+            const totalCopies = book.totalCopies || 0;
+            const copies = book.copies || [];
+            
+            const copyStatus = availableCopies > 0 
+                ? `<span class="badge badge-success">${availableCopies}/${totalCopies} Available</span>`
+                : `<span class="badge badge-error">All copies rented</span>`;
+            
+            // Create individual copy buttons for available copies
+            const availableCopyButtons = copies
+                .filter(copy => copy.Available === 1)
+                .slice(0, 3) // Show only first 3 available copies
+                .map(copy => `
+                    <button class="btn btn-success btn-xs rent-copy-btn" data-copy-id="${copy.copyID}" data-isbn="${book.bookISBN || book.ISBN}">
+                        <i class="fas fa-plus mr-1"></i>Copy #${copy.copyID}
+                    </button>
+                `).join('');
+            
+            const moreAvailable = copies.filter(copy => copy.Available === 1).length;
+            const showMoreButton = moreAvailable > 3 
+                ? `<button class="btn btn-outline btn-xs" onclick="showAllCopies('${book.bookISBN || book.ISBN}')">+${moreAvailable - 3} more</button>`
+                : '';
             
             return `
                 <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-base-300">
@@ -1145,8 +1178,8 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </div>
                                 <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
-                                    <li><a class="text-info edit-book-btn" data-isbn="${book.ISBN}"><i class="fas fa-edit mr-2"></i>Edit</a></li>
-                                    <li><a class="text-error delete-book-btn" data-isbn="${book.ISBN}"><i class="fas fa-trash mr-2"></i>Delete</a></li>
+                                    <li><a class="text-info edit-book-btn" data-isbn="${book.bookISBN || book.ISBN}"><i class="fas fa-edit mr-2"></i>Edit</a></li>
+                                    <li><a class="text-error delete-book-btn" data-isbn="${book.bookISBN || book.ISBN}"><i class="fas fa-trash mr-2"></i>Delete</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -1163,16 +1196,32 @@
                                 ${genreBadges}
                             </div>
                         </div>
+                        
+                        <!-- Copy Availability Section -->
+                        <div class="mb-3 p-3 bg-base-200 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-copy text-info text-sm"></i>
+                                <span class="text-sm font-medium">Copies:</span>
+                                ${copyStatus}
+                            </div>
+                            ${availableCopyButtons ? `
+                                <div class="flex flex-wrap gap-1">
+                                    ${availableCopyButtons}
+                                    ${showMoreButton}
+                                </div>
+                            ` : '<p class="text-xs text-base-content/60">No copies available for rent</p>'}
+                        </div>
+                        
                         <p class="text-base-content/60 text-sm mb-4">${description}</p>
                         <div class="card-actions justify-between items-center">
                             <div class="text-xs text-base-content/50">
-                                ISBN: ${book.ISBN}
+                                ISBN: ${book.bookISBN || book.ISBN}
                             </div>
                             <div class="btn-group">
-                                <button class="btn btn-info btn-sm edit-book-btn" data-isbn="${book.ISBN}">
+                                <button class="btn btn-info btn-sm edit-book-btn" data-isbn="${book.bookISBN || book.ISBN}">
                                     <i class="fas fa-edit mr-1"></i>Edit
                                 </button>
-                                <button class="btn btn-error btn-sm delete-book-btn" data-isbn="${book.ISBN}">
+                                <button class="btn btn-error btn-sm delete-book-btn" data-isbn="${book.bookISBN || book.ISBN}">
                                     <i class="fas fa-trash mr-1"></i>Delete
                                 </button>
                             </div>
@@ -1196,6 +1245,21 @@
                   (book.genres.length > 2 ? ` <span class="badge badge-ghost badge-xs">+${book.genres.length - 2}</span>` : '')
                 : '<span class="badge badge-ghost badge-xs">None</span>';
             
+            // Copy availability info
+            const availableCopies = book.availableCopies || 0;
+            const totalCopies = book.totalCopies || 0;
+            const copyStatusBadge = availableCopies > 0 
+                ? `<span class="badge badge-success badge-xs">${availableCopies}/${totalCopies}</span>`
+                : `<span class="badge badge-error badge-xs">0/${totalCopies}</span>`;
+            
+            // Quick rent button for first available copy
+            const firstAvailableCopy = book.copies ? book.copies.find(copy => copy.Available === 1) : null;
+            const quickRentButton = firstAvailableCopy 
+                ? `<button class="btn btn-success btn-xs rent-copy-btn" data-copy-id="${firstAvailableCopy.copyID}" data-isbn="${book.bookISBN || book.ISBN}">
+                     <i class="fas fa-plus mr-1"></i>Rent Copy #${firstAvailableCopy.copyID}
+                   </button>`
+                : `<button class="btn btn-ghost btn-xs" disabled>No copies available</button>`;
+            
             return `
                 <tr class="hover table-row-clickable" data-isbn="${book.ISBN}" title="Click to view detailed information and rental history">
                     <td class="font-semibold">${book.Title}</td>
@@ -1208,15 +1272,24 @@
                             ${genreBadges}
                         </div>
                     </td>
-                    <td class="max-w-xs truncate">${description}</td>
+                    <td class="max-w-xs">
+                        <div class="mb-1">${description}</div>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-copy text-xs"></i>
+                            ${copyStatusBadge}
+                        </div>
+                    </td>
                     <td>
-                        <div class="btn-group">
-                            <button class="btn btn-info btn-xs edit-book-btn" data-isbn="${book.ISBN}">
-                                <i class="fas fa-edit mr-1"></i>Edit
-                            </button>
-                            <button class="btn btn-error btn-xs delete-book-btn" data-isbn="${book.ISBN}">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>
+                        <div class="flex flex-col gap-1">
+                            ${quickRentButton}
+                            <div class="btn-group">
+                                <button class="btn btn-info btn-xs edit-book-btn" data-isbn="${book.bookISBN || book.ISBN}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-error btn-xs delete-book-btn" data-isbn="${book.bookISBN || book.ISBN}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -1353,6 +1426,63 @@
             
             // Show the custom delete modal
             deleteBookModal.showModal();
+        }
+
+        function showRentCopyModal(copyId, isbn) {
+            // For now, we'll show a simple prompt to get member ID
+            // In a full implementation, this would be a proper modal with member selection
+            const memberId = prompt('Enter Member ID to rent this copy:');
+            
+            if (memberId && !isNaN(memberId)) {
+                rentCopy(parseInt(memberId), parseInt(copyId), isbn);
+            } else if (memberId !== null) {
+                alert('Please enter a valid Member ID');
+            }
+        }
+
+        async function rentCopy(memberId, copyId, isbn) {
+            try {
+                const response = await fetch(`/api/members/${memberId}/rent-copy/${copyId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert(`Copy #${copyId} rented successfully!`);
+                    // Reload the books to update availability
+                    loadBooks();
+                } else {
+                    alert(`Error: ${result.error || result.message || 'Failed to rent copy'}`);
+                }
+            } catch (error) {
+                console.error('Error renting copy:', error);
+                alert('Error renting copy. Please try again.');
+            }
+        }
+
+        function showAllCopies(isbn) {
+            const book = allBooks.find(b => (b.bookISBN || b.ISBN) === isbn);
+            if (!book) return;
+            
+            const copies = book.copies || [];
+            const availableCopies = copies.filter(copy => copy.Available === 1);
+            
+            if (availableCopies.length === 0) {
+                alert('No available copies for this book.');
+                return;
+            }
+            
+            let message = `Available copies for "${book.Title}":\\n\\n`;
+            availableCopies.forEach(copy => {
+                message += `Copy #${copy.copyID} - Available\\n`;
+            });
+            message += '\\nClick on individual copy buttons to rent them.';
+            
+            alert(message);
         }
 
         function confirmDelete() {

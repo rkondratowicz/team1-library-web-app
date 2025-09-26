@@ -12,6 +12,48 @@ export class MemberController {
     this.bookService = new BookService();
   }
 
+  async rentCopy(req: Request, res: Response): Promise<void> {
+    try {
+      console.log("Rent copy request received");
+      console.log("Member ID:", req.params.id, "Copy ID:", req.params.copyId);
+
+      const memberId = parseInt(req.params.id, 10);
+      const copyId = parseInt(req.params.copyId, 10);
+
+      if (Number.isNaN(memberId)) {
+        res.status(400).json({ error: "Invalid member ID" });
+        return;
+      }
+
+      if (Number.isNaN(copyId)) {
+        res.status(400).json({ error: "Invalid copy ID" });
+        return;
+      }
+
+      // Check if the copy is available
+      const available = await this.bookService.copyAvailable(copyId);
+      console.log("Copy availability check:", available, "for copy:", copyId);
+
+      if (!available) {
+        res.status(400).json({ error: "Copy is not available for rent" });
+        return;
+      }
+
+      const result = await this.memberService.rentCopy(memberId, copyId);
+      if (result.success) {
+        res.status(200).json({ success: true, message: result.message });
+        return;
+      } else {
+        res.status(400).json({ error: result.message });
+        return;
+      }
+    } catch (err: unknown) {
+      console.error("Error renting copy:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  // Legacy method for backward compatibility
   async rentBook(req: Request, res: Response): Promise<void> {
     try {
       console.log("Rent book request received");
@@ -78,6 +120,40 @@ export class MemberController {
     }
   }
 
+  async returnCopy(req: Request, res: Response): Promise<void> {
+    try {
+      console.log("Return copy request received");
+      console.log("Member ID:", req.params.id, "Copy ID:", req.params.copyId);
+
+      const memberId = parseInt(req.params.id, 10);
+      const copyId = parseInt(req.params.copyId, 10);
+
+      if (Number.isNaN(memberId)) {
+        res.status(400).json({ error: "Invalid member ID" });
+        return;
+      }
+
+      if (Number.isNaN(copyId)) {
+        res.status(400).json({ error: "Invalid copy ID" });
+        return;
+      }
+
+      const result = await this.memberService.returnCopy(memberId, copyId);
+
+      if (result.success) {
+        res.status(200).json({ success: true, message: result.message });
+        return;
+      } else {
+        res.status(400).json({ error: result.message });
+        return;
+      }
+    } catch (err: unknown) {
+      console.error("Error returning copy:", err);
+      res.status(500).json({ error: "An error occurred while returning the copy" });
+    }
+  }
+
+  // Legacy method for backward compatibility
   async returnBook(req: Request, res: Response): Promise<void> {
     try {
       console.log("Return book request received");

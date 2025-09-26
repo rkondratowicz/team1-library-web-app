@@ -28,6 +28,19 @@ export function createMemberRoutes(memberController: MemberController): Router {
   // PUT /api/members/:id
   router.put("/members/:id", (req, res) => memberController.updateMember(req, res));
 
+  // Rent a specific copy
+  // POST /api/members/:id/rent-copy/:copyId
+  router.post("/members/:id/rent-copy/:copyId", (req, res) => {
+    memberController.rentCopy(req, res);
+  });
+
+  // Return a specific copy
+  // POST /api/members/:id/return-copy/:copyId
+  router.post("/members/:id/return-copy/:copyId", (req, res) => {
+    memberController.returnCopy(req, res);
+  });
+
+  // Legacy routes for backward compatibility
   router.post("/members/:id/rental/:bookTitle", (req, res) => {
     memberController.rentBook(req, res);
   });

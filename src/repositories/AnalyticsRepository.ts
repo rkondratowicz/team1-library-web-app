@@ -8,6 +8,20 @@ export interface LibraryStats {
   availableBooks: number;
 }
 
+interface LibraryStatsRow {
+  totalBooks: number;
+  totalMembers: number;
+  booksCurrentlyBorrowed: number;
+}
+
+interface CountRow {
+  count: number;
+}
+
+interface AvailableCountRow {
+  availableCount: number;
+}
+
 export class AnalyticsRepository {
   private db: sqlite3.Database;
 
@@ -25,7 +39,7 @@ export class AnalyticsRepository {
           (SELECT COUNT(*) FROM rentals WHERE returned IS NULL OR returned = 0) as booksCurrentlyBorrowed
       `;
 
-      this.db.get(query, (err: unknown, row: any) => {
+      this.db.get(query, (err: unknown, row: LibraryStatsRow) => {
         if (err) {
           reject(err);
           return;
@@ -48,7 +62,7 @@ export class AnalyticsRepository {
 
   async getTotalBooks(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.db.get("SELECT COUNT(*) as count FROM Books", (err: unknown, row: any) => {
+      this.db.get("SELECT COUNT(*) as count FROM Books", (err: unknown, row: CountRow) => {
         if (err) {
           reject(err);
           return;
@@ -60,7 +74,7 @@ export class AnalyticsRepository {
 
   async getTotalMembers(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.db.get("SELECT COUNT(*) as count FROM members", (err: unknown, row: any) => {
+      this.db.get("SELECT COUNT(*) as count FROM members", (err: unknown, row: CountRow) => {
         if (err) {
           reject(err);
           return;
@@ -74,7 +88,7 @@ export class AnalyticsRepository {
     return new Promise((resolve, reject) => {
       this.db.get(
         "SELECT COUNT(*) as count FROM rentals WHERE returned IS NULL OR returned = 0",
-        (err: unknown, row: any) => {
+        (err: unknown, row: CountRow) => {
           if (err) {
             reject(err);
             return;
@@ -93,7 +107,7 @@ export class AnalyticsRepository {
           (SELECT COUNT(*) FROM rentals WHERE returned IS NULL OR returned = 0) as availableCount
       `;
 
-      this.db.get(query, (err: unknown, row: any) => {
+      this.db.get(query, (err: unknown, row: AvailableCountRow) => {
         if (err) {
           reject(err);
           return;

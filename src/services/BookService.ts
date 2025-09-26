@@ -1,36 +1,51 @@
 import type { Book } from "../models/Book.js";
+import type { AvailableCopySummary, Copy, RentalWithCopyInfo } from "../models/Copy.js";
 import {
   BookRepository,
   type Genre,
   type RentalHistoryEntry,
 } from "../repositories/BookRepository.js";
+import { CopyRepository } from "../repositories/CopyRepository.js";
 
 export class BookService {
   private bookRepository: BookRepository;
+  private copyRepository: CopyRepository;
 
   constructor() {
     this.bookRepository = new BookRepository();
+    this.copyRepository = new CopyRepository();
   }
 
   async getAllBooks(): Promise<Book[]> {
     return await this.bookRepository.findAll();
   }
 
+  // Get all books with their copy information
+  async getAllBooksWithCopies(): Promise<AvailableCopySummary[]> {
+    return await this.copyRepository.getAllBooksWithCopies();
+  }
+
   async getBookByTitle(title: string): Promise<Book | undefined> {
     return await this.bookRepository.findByTitle(title);
   }
 
+  // Get available copies for a specific book by ISBN
+  async getAvailableCopies(isbn: string): Promise<Copy[]> {
+    return await this.copyRepository.findAvailableByISBN(isbn);
+  }
+
+  // Check if any copies are available for a book by title
   async bookAvailable(bookTitle: string): Promise<boolean> {
     const book = await this.bookRepository.findByTitle(bookTitle);
-    let status: boolean = false;
-    if (book?.available !== undefined) {
-      if (book.available > 0) {
-        status = true;
-      } else {
-        status = false;
-      }
-    }
-    return status;
+    if (!book) return false;
+
+    const availableCopies = await this.copyRepository.findAvailableByISBN(book.ISBN);
+    return availableCopies.length > 0;
+  }
+
+  // Check if a specific copy is available
+  async copyAvailable(copyID: number): Promise<boolean> {
+    return await this.copyRepository.isAvailable(copyID);
   }
 
   async addBook(book: Book, genres?: string[]): Promise<Book> {
@@ -47,7 +62,7 @@ export class BookService {
     }
   }
 
-  async getRentals(): Promise<RentalHistoryEntry[]> {
+  async getRentals(): Promise<RentalWithCopyInfo[]> {
     return await this.bookRepository.getRentals();
   }
 
