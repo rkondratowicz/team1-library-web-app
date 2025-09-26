@@ -1,12 +1,15 @@
 import path from "node:path";
 import express from "express";
+import { AnalyticsController } from "./controllers/AnalyticsController.js";
 import { BookController } from "./controllers/BookController.js";
 import { MemberController } from "./controllers/memberController.js";
 import { setupMiddleware } from "./middleware/index.js";
 import { BookRepository } from "./repositories/BookRepository.js";
+import { createAnalyticsRoutes } from "./routes/AnalyticsRoutes.js";
 import { createBookRoutes } from "./routes/BookRoutes.js";
 import { createGreetRoutes } from "./routes/GreetRoutes.js";
 import { createMemberRoutes } from "./routes/memberRoutes.js";
+import { AnalyticsService } from "./services/AnalyticsService.js";
 import { BookService } from "./services/BookService.js";
 
 const app = express();
@@ -29,12 +32,35 @@ const bookController = new BookController();
 // const _memberService = new MemberService();
 const memberController = new MemberController();
 
+// Analytics components
+const analyticsService = new AnalyticsService();
+const analyticsController = new AnalyticsController();
+
 app.use("/api", createBookRoutes(bookController));
 app.use("/api", createMemberRoutes(memberController));
+app.use("/api", createAnalyticsRoutes(analyticsController));
 app.use("/api", createGreetRoutes());
 
-app.get("/", (_req, res) => {
-  res.render("index", { title: "Library Home" });
+app.get("/", async (_req, res) => {
+  try {
+    const stats = await analyticsService.getLibraryStats();
+    res.render("index", {
+      title: "Library Home",
+      stats: stats,
+    });
+  } catch (error) {
+    console.error("Error fetching analytics for home page:", error);
+    // Render with default stats if there's an error
+    res.render("index", {
+      title: "Library Home",
+      stats: {
+        totalBooks: 0,
+        totalMembers: 0,
+        booksCurrentlyBorrowed: 0,
+        availableBooks: 0,
+      },
+    });
+  }
 });
 
 app.get("/books", async (_req, res) => {
