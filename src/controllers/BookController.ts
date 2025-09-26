@@ -222,6 +222,10 @@ export class BookController {
       res.status(500).json({
         success: false,
         message: "Error retrieving books with copies",
+        errors: [String(error)],
+      });
+    }
+  }
 
   async getBookDetails(req: Request, res: Response): Promise<void> {
     try {
@@ -264,6 +268,9 @@ export class BookController {
       res.status(500).render("books", {
         booksWithCopies: [],
         errors: ["Error retrieving books with copies"],
+      });
+    }
+  }
 
   async getAllGenres(_req: Request, res: Response): Promise<void> {
     try {

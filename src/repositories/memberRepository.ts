@@ -62,18 +62,19 @@ export class MemberRepository {
   rentCopy(memberID: number, copyID: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const sql = `INSERT INTO rentals (memberID, copyID) VALUES (?, ?)`;
-      this.db.run(sql, [memberID, copyID], function (this: sqlite3.RunResult, err: Error | null) {
+      this.db.run(sql, [memberID, copyID], (err: Error | null) => {
         if (err) return reject(err);
-        resolve();
+        
+        // Update copy availability to 0 (not available)
+        this.db.run(
+          `UPDATE copy SET Available = 0 WHERE copyID = ?`,
+          [copyID],
+          (err: Error | null) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
       });
-      // Update copy availability to 0 (not available)
-      this.db.run(
-        `UPDATE copy SET Available = 0 WHERE copyID = ?`,
-        [copyID],
-        (err: Error | null) => {
-          if (err) return reject(err);
-        }
-      );
     });
   }
 
@@ -114,19 +115,21 @@ export class MemberRepository {
 
   returnCopy(memberID: number, copyID: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      // First, check if there's an active rental for this copy
+      // First, check if there's an active rental for this copy and get the book ISBN
       const checkSql = `
-        SELECT rentalID FROM rentals 
-        WHERE memberID = ? AND copyID = ? AND (returned IS NULL OR returned = 0)
+        SELECT r.rentalID, c.bookISBN 
+        FROM rentals r
+        JOIN copy c ON r.copyID = c.copyID
+        WHERE r.memberID = ? AND r.copyID = ? AND (r.returned IS NULL OR r.returned = 0)
         LIMIT 1
       `;
 
-      this.db.get(checkSql, [memberID, copyID], (err: unknown, row: RentalIDRow | undefined) => {
+      this.db.get(checkSql, [memberID, copyID], (err: unknown, row: { rentalID: number; bookISBN: string } | undefined) => {
         if (err) return reject(err);
         if (!row) return reject(new Error("No active rental found for this copy"));
 
-          // Update the rental as returned
-          const updateRentalSql = `
+        // Update the rental as returned
+        const updateRentalSql = `
           UPDATE rentals 
           SET returned = 1, returnedDate = CURRENT_TIMESTAMP 
           WHERE rentalID = ?
@@ -138,18 +141,17 @@ export class MemberRepository {
           // Mark copy as available again
           const updateCopySql = `UPDATE copy SET Available = 1 WHERE copyID = ?`;
           this.db.run(updateCopySql, [copyID], (err: Error | null) => {
-
             if (err) return reject(err);
 
             // Increase book availability
             const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
-            this.db.run(updateBookSql, [bookISBN], (err: Error | null) => {
+            this.db.run(updateBookSql, [row.bookISBN], (err: Error | null) => {
               if (err) return reject(err);
               resolve();
             });
           });
-        }
-      );
+        });
+      });
     });
   }
 

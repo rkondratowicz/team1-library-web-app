@@ -1090,7 +1090,7 @@
 
         async function loadBooks() {
             try {
-                const response = await fetch('/api/books-with-copies');
+                const response = await fetch('/api/books');
                 if (response.ok) {
                     const data = await response.json();
                     allBooks = Array.isArray(data) ? data : (data.data || []);

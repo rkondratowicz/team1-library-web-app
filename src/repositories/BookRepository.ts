@@ -55,7 +55,6 @@ export class BookRepository {
         JOIN rentals as r on m.id = r.memberID 
         JOIN copy as c on r.copyID = c.copyID
         JOIN books as b on c.bookISBN = b.ISBN 
-        WHERE r.returned = 0 OR r.returned IS NULL
         ORDER BY r.RentalDate desc
       `;
       this.db.all(sql, (err: unknown, rows: RentalWithCopyInfo[]) => {
@@ -178,15 +177,18 @@ export class BookRepository {
         SELECT 
           r.rentalID,
           r.memberID,
-          r.bookISBN,
+          c.bookISBN,
           r.returned,
           r.RentalDate,
           r.returnedDate,
           (m.Fname || ' ' || m.Sname) as memberName,
-          m.email as memberEmail
+          m.email as memberEmail,
+          r.copyID,
+          c.copyID as copyNumber
         FROM rentals r
         LEFT JOIN members m ON r.memberID = m.id
-        WHERE r.bookISBN = ?
+        LEFT JOIN copy c ON r.copyID = c.copyID
+        WHERE c.bookISBN = ?
         ORDER BY r.RentalDate ASC
       `;
 
@@ -211,6 +213,8 @@ export class BookRepository {
           returnedDate: row.returnedDate,
           memberName: row.memberName,
           memberEmail: row.memberEmail,
+          copyID: row.copyID,
+          copyNumber: row.copyNumber,
         }));
 
         resolve(rentalHistory);
@@ -479,6 +483,8 @@ export interface RentalHistoryEntry {
   returnedDate?: string;
   memberName?: string;
   memberEmail?: string;
+  copyID?: number;
+  copyNumber?: number;
 }
 
 // Raw database row interface for rental history queries
@@ -491,4 +497,6 @@ interface RentalHistoryRow {
   returnedDate?: string;
   memberName?: string;
   memberEmail?: string;
+  copyID?: number;
+  copyNumber?: number;
 }

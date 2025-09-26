@@ -1,7 +1,7 @@
 import type { Book } from "../models/Book.js";
 
 import type { AvailableCopySummary, Copy, RentalWithCopyInfo } from "../models/Copy.js";
-import { BookRepository } from "../repositories/BookRepository.js";
+import { BookRepository, type Genre, type RentalHistoryEntry } from "../repositories/BookRepository.js";
 import { CopyRepository } from "../repositories/CopyRepository.js";
 
 
@@ -15,7 +15,30 @@ export class BookService {
   }
 
   async getAllBooks(): Promise<Book[]> {
-    return await this.bookRepository.findAll();
+    // Get books with copy information
+    const booksWithCopies = await this.copyRepository.getAllBooksWithCopies();
+    
+    // Convert AvailableCopySummary to Book format and add genre information
+    const books: Book[] = await Promise.all(
+      booksWithCopies.map(async (bookSummary) => {
+        // Get genre information for each book
+        const bookWithGenres = await this.bookRepository.findByISBN(bookSummary.bookISBN);
+        
+        return {
+          ISBN: bookSummary.bookISBN,
+          Title: bookSummary.Title,
+          Author: bookSummary.Author,
+          PublicationYear: bookSummary.PublicationYear || 0,
+          Description: bookSummary.Description || "",
+          genres: bookWithGenres?.genres || [],
+          totalCopies: bookSummary.totalCopies,
+          availableCopies: bookSummary.availableCopies,
+          copies: bookSummary.copies
+        };
+      })
+    );
+    
+    return books;
   }
 
   // Get all books with their copy information
@@ -45,18 +68,7 @@ export class BookService {
   async copyAvailable(copyID: number): Promise<boolean> {
     return await this.copyRepository.isAvailable(copyID);
   }
-  async getRentals(): Promise<RentalWithCopyInfo[]> {
-    return await this.bookRepository.getRentals();
-    let status: boolean = false;
-    if (book?.available !== undefined) {
-      if (book.available > 0) {
-        status = true;
-      } else {
-        status = false;
-      }
-    }
-    return status;
-  }
+
 
   async addBook(book: Book, genres?: string[]): Promise<Book> {
     if (genres && genres.length > 0) {
@@ -72,7 +84,7 @@ export class BookService {
     }
   }
 
-  async getRentals(): Promise<RentalHistoryEntry[]> {
+  async getRentals(): Promise<RentalWithCopyInfo[]> {
     return await this.bookRepository.getRentals();
   }
 
