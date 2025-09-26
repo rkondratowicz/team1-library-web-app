@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-base-100">
+    <!-- Navigation -->
+    <div class="navbar bg-primary text-primary-content shadow-lg sticky top-0 z-40">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
+                    </svg>
+                </div>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-primary rounded-box w-52">
+                    <li><a href="/" class="text-primary-content"><i class="fas fa-home mr-2"></i>Home</a></li>
+                    <li><a href="/books" class="text-primary-content"><i class="fas fa-book mr-2"></i>Books</a></li>
+                    <li><a href="/members" class="text-primary-content"><i class="fas fa-users mr-2"></i>Members</a></li>
+                    <li><a href="/borrowing" class="text-primary-content"><i class="fas fa-exchange-alt mr-2"></i>Borrowing</a></li>
+                    <li><a href="/analytics" class="text-primary-content font-bold"><i class="fas fa-chart-line mr-2"></i>Analytics</a></li>
+                </ul>
+            </div>
+            <a href="/" class="btn btn-ghost text-xl">
+                <i class="fas fa-book-open mr-2"></i>
+                Library Management
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/" class="text-primary-content"><i class="fas fa-home mr-2"></i>Home</a></li>
+                <li><a href="/books" class="text-primary-content"><i class="fas fa-book mr-2"></i>Books</a></li>
+                <li><a href="/members" class="text-primary-content"><i class="fas fa-users mr-2"></i>Members</a></li>
+                <li><a href="/borrowing" class="text-primary-content"><i class="fas fa-exchange-alt mr-2"></i>Borrowing</a></li>
+                <li><a href="/analytics" class="text-primary-content font-bold"><i class="fas fa-chart-line mr-2"></i>Analytics</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end">
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-outline btn-sm">
+                    <i class="fas fa-filter mr-2"></i>
+                    Time Range
+                </div>
+                <div tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a id="filterWeek"><i class="fas fa-calendar-week mr-2"></i>Last Week</a></li>
+                    <li><a id="filterMonth" class="active"><i class="fas fa-calendar-alt mr-2"></i>Last Month</a></li>
+                    <li><a id="filterYear"><i class="fas fa-calendar mr-2"></i>Last Year</a></li>
+                    <li><a id="filterAll"><i class="fas fa-infinity mr-2"></i>All Time</a></li>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header Section -->
+        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-base-content mb-2">
+                    <i class="fas fa-chart-line text-primary mr-3"></i>
+                    Library Analytics
+                </h1>
+                <p class="text-base-content/70">Insights and statistics about your library operations</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-4 lg:mt-0">
+                <button id="exportReport" class="btn btn-outline btn-lg">
+                    <i class="fas fa-download mr-2"></i>
+                    Export Report
+                </button>
+                <button id="refreshData" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Overview Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div class="stat bg-primary text-primary-content rounded-box shadow-lg">
+                <div class="stat-figure">
+                    <i class="fas fa-books text-3xl opacity-80"></i>
+                </div>
+                <div class="stat-title text-primary-content/80">Total Collections</div>
+                <div class="stat-value" id="totalCollections">--</div>
+                <div class="stat-desc text-primary-content/60">Books & Copies</div>
+            </div>
+            
+            <div class="stat bg-secondary text-secondary-content rounded-box shadow-lg">
+                <div class="stat-figure">
+                    <i class="fas fa-users text-3xl opacity-80"></i>
+                </div>
+                <div class="stat-title text-secondary-content/80">Active Members</div>
+                <div class="stat-value" id="activeMembers">--</div>
+                <div class="stat-desc text-secondary-content/60">Registered users</div>
+            </div>
+            
+            <div class="stat bg-accent text-accent-content rounded-box shadow-lg">
+                <div class="stat-figure">
+                    <i class="fas fa-hand-holding-heart text-3xl opacity-80"></i>
+                </div>
+                <div class="stat-title text-accent-content/80">Active Loans</div>
+                <div class="stat-value" id="activeLoans">--</div>
+                <div class="stat-desc text-accent-content/60">Currently borrowed</div>
+            </div>
+            
+            <div class="stat bg-info text-info-content rounded-box shadow-lg">
+                <div class="stat-figure">
+                    <i class="fas fa-percentage text-3xl opacity-80"></i>
+                </div>
+                <div class="stat-title text-info-content/80">Utilization Rate</div>
+                <div class="stat-value" id="utilizationRate">--%</div>
+                <div class="stat-desc text-info-content/60">Collection usage</div>
+            </div>
+        </div>
+
+        <!-- Analytics Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+            <!-- Borrowing Trends Chart -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-4">
+                        <i class="fas fa-trending-up text-primary mr-2"></i>
+                        Borrowing Trends
+                    </h2>
+                    <div class="h-64 flex items-center justify-center bg-base-100 rounded-lg border-2 border-dashed border-base-300">
+                        <div class="text-center text-base-content/50">
+                            <i class="fas fa-chart-line text-4xl mb-4"></i>
+                            <p class="text-lg font-medium">Chart Placeholder</p>
+                            <p class="text-sm">Borrowing trends over time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Books -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-4">
+                        <i class="fas fa-fire text-primary mr-2"></i>
+                        Most Popular Books
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-base-100 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="badge badge-primary badge-lg">1</div>
+                                <div>
+                                    <p class="font-medium text-base-content">Book Title Placeholder</p>
+                                    <p class="text-sm text-base-content/60">Author Name</p>
+                                </div>
+                            </div>
+                            <div class="badge badge-outline">-- loans</div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-base-100 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="badge badge-secondary badge-lg">2</div>
+                                <div>
+                                    <p class="font-medium text-base-content">Book Title Placeholder</p>
+                                    <p class="text-sm text-base-content/60">Author Name</p>
+                                </div>
+                            </div>
+                            <div class="badge badge-outline">-- loans</div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-base-100 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="badge badge-accent badge-lg">3</div>
+                                <div>
+                                    <p class="font-medium text-base-content">Book Title Placeholder</p>
+                                    <p class="text-sm text-base-content/60">Author Name</p>
+                                </div>
+                            </div>
+                            <div class="badge badge-outline">-- loans</div>
+                        </div>
+                    </div>
+                    <div class="card-actions justify-end mt-4">
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-eye mr-1"></i>
+                            View All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Analytics Row -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Member Activity -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4">
+                        <i class="fas fa-user-clock text-primary mr-2"></i>
+                        Member Activity
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">New Registrations</span>
+                            <span class="font-bold text-primary">-- this month</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">Active This Month</span>
+                            <span class="font-bold text-secondary">-- members</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">Avg. Books per Member</span>
+                            <span class="font-bold text-accent">-- books</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collection Insights -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4">
+                        <i class="fas fa-book-reader text-primary mr-2"></i>
+                        Collection Insights
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">Most Popular Genre</span>
+                            <span class="font-bold text-primary">-- Genre</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">Avg. Book Age</span>
+                            <span class="font-bold text-secondary">-- years</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-base-content/70">Underutilized Books</span>
+                            <span class="font-bold text-warning">-- books</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4">
+                        <i class="fas fa-bolt text-primary mr-2"></i>
+                        Quick Actions
+                    </h2>
+                    <div class="space-y-3">
+                        <button class="btn btn-outline btn-sm w-full justify-start">
+                            <i class="fas fa-file-excel mr-2"></i>
+                            Export Monthly Report
+                        </button>
+                        <button class="btn btn-outline btn-sm w-full justify-start">
+                            <i class="fas fa-bell mr-2"></i>
+                            Setup Alerts
+                        </button>
+                        <button class="btn btn-outline btn-sm w-full justify-start">
+                            <i class="fas fa-cogs mr-2"></i>
+                            Analytics Settings
+                        </button>
+                        <button class="btn btn-outline btn-sm w-full justify-start">
+                            <i class="fas fa-history mr-2"></i>
+                            View Historical Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Indicators -->
+        <div class="mt-8">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-6">
+                        <i class="fas fa-tachometer-alt text-primary mr-2"></i>
+                        Key Performance Indicators
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <div class="text-center p-4 bg-base-100 rounded-lg">
+                            <div class="text-3xl font-bold text-success mb-2" id="returnRate">--%</div>
+                            <div class="text-sm text-base-content/70">On-Time Return Rate</div>
+                            <div class="text-xs text-success mt-1">↗ Good performance</div>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-base-100 rounded-lg">
+                            <div class="text-3xl font-bold text-info mb-2" id="avgLoanDuration">-- days</div>
+                            <div class="text-sm text-base-content/70">Avg. Loan Duration</div>
+                            <div class="text-xs text-info mt-1">📊 Tracking</div>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-base-100 rounded-lg">
+                            <div class="text-3xl font-bold text-warning mb-2" id="overdueBooks">--</div>
+                            <div class="text-sm text-base-content/70">Overdue Items</div>
+                            <div class="text-xs text-warning mt-1">⚠ Needs attention</div>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-base-100 rounded-lg">
+                            <div class="text-3xl font-bold text-primary mb-2" id="monthlyGrowth">--%</div>
+                            <div class="text-sm text-base-content/70">Monthly Growth</div>
+                            <div class="text-xs text-primary mt-1">📈 Trending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer footer-center p-4 bg-base-300 text-base-content mt-8">
+        <div>
+            <p>© 2024 Library Management System - Analytics Dashboard</p>
+        </div>
+    </footer>
+
+    <script>
+        // Placeholder for future analytics JavaScript functionality
+        console.log('Analytics page loaded');
+        
+        // Example of future functionality
+        document.getElementById('refreshData')?.addEventListener('click', function() {
+            console.log('Refreshing analytics data...');
+            // Future: Implement data refresh functionality
+        });
+
+        document.getElementById('exportReport')?.addEventListener('click', function() {
+            console.log('Exporting report...');
+            // Future: Implement report export functionality
+        });
+
+        // Time range filter functionality placeholder
+        document.querySelectorAll('[id^="filter"]').forEach(filter => {
+            filter.addEventListener('click', function() {
+                document.querySelectorAll('[id^="filter"]').forEach(f => f.classList.remove('active'));
+                this.classList.add('active');
+                console.log('Time range filter changed to:', this.textContent);
+                // Future: Implement actual filtering
+            });
+        });
+    </script>
+</body>
+</html>
