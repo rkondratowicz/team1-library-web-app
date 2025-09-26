@@ -150,4 +150,103 @@ export class BookRepository {
       });
     });
   }
+
+  findRentalHistory(isbn: string): Promise<RentalHistoryEntry[]> {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT 
+          r.rentalID,
+          r.memberID,
+          r.bookISBN,
+          r.returned,
+          r.RentalDate,
+          r.returnedDate,
+          (m.Fname || ' ' || m.Sname) as memberName,
+          m.email as memberEmail
+        FROM rentals r
+        LEFT JOIN members m ON r.memberID = m.id
+        WHERE r.bookISBN = ?
+        ORDER BY r.RentalDate ASC
+      `;
+      
+      console.log('Executing rental history query for ISBN:', isbn);
+      console.log('SQL:', sql);
+      
+      this.db.all(sql, [isbn], (err: unknown, rows: any[]) => {
+        if (err) {
+          console.error('Database error in findRentalHistory:', err);
+          return reject(err);
+        }
+        
+        console.log('Rental history query returned', rows?.length || 0, 'rows');
+        console.log('Sample data:', rows?.[0]);
+        
+        const rentalHistory: RentalHistoryEntry[] = rows.map(row => ({
+          rentalID: row.rentalID,
+          memberID: row.memberID,
+          bookISBN: row.bookISBN,
+          returned: row.returned === 1,
+          rentalDate: row.RentalDate,
+          returnedDate: row.returnedDate,
+          memberName: row.memberName,
+          memberEmail: row.memberEmail
+        }));
+        
+        resolve(rentalHistory);
+      });
+    });
+  }
+
+  findByISBN(isbn: string): Promise<Book | undefined> {
+    return new Promise((resolve, reject) => {
+      console.log('Finding book by ISBN:', isbn);
+      
+      this.db.get(
+        "SELECT * FROM books WHERE ISBN = ?",
+        [isbn],
+        (err: unknown, row: Book | undefined) => {
+          if (err) {
+            console.error('Database error in findByISBN:', err);
+            return reject(err);
+          }
+          if (!row) {
+            console.log('No book found with ISBN:', isbn);
+            resolve(undefined);
+            return;
+          }
+
+          console.log('Found book:', row);
+
+          // Get genres for this book
+          this.db.all(
+            `SELECT g.Genre 
+             FROM Genre g 
+             JOIN BookGenre bg ON g.GenreID = bg.GenreID 
+             WHERE bg.ISBN = ?`,
+            [row.ISBN],
+            (genreErr: unknown, genreRows: { Genre: string }[]) => {
+              if (genreErr) {
+                console.error('Database error getting genres:', genreErr);
+                return reject(genreErr);
+              }
+              console.log('Found genres for book:', genreRows);
+              row.genres = genreRows.map((genreRow) => genreRow.Genre);
+              resolve(row);
+            }
+          );
+        }
+      );
+    });
+  }
+}
+
+export interface RentalHistoryEntry {
+  rentalID: number;
+  memberID: number;
+  bookISBN: string;
+  returned: boolean;
+  rentalDate: string;
+  returnedDate?: string;
+  memberName?: string;
+  memberEmail?: string;
 }

@@ -372,6 +372,334 @@
         </form>
     </dialog>
 
+    <!-- Book Details Modal -->
+    <dialog id="bookDetailsModal" class="modal">
+        <div class="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex-1">
+                    <h2 class="font-bold text-2xl mb-2" id="detailBookTitle">Book Title</h2>
+                    <p class="text-lg text-base-content/80" id="detailBookAuthor">by Author Name</p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <div id="detailBookStatus" class="badge badge-success">
+                        <i class="fas fa-check-circle mr-1"></i>Available
+                    </div>
+                    <div class="text-sm text-base-content/60" id="detailBookYear">2023</div>
+                </div>
+            </div>
+
+            <!-- Book Information Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Basic Info Card -->
+                <div class="card bg-base-200 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-lg mb-3">
+                            <i class="fas fa-info-circle text-primary mr-2"></i>Book Information
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="font-medium">ISBN:</span>
+                                <span class="font-mono text-sm" id="detailBookISBN">978-1234567890</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Publication Year:</span>
+                                <span id="detailBookYearFull">2023</span>
+                            </div>
+                            <div>
+                                <span class="font-medium block mb-2">Genres:</span>
+                                <div id="detailBookGenres" class="flex flex-wrap gap-1">
+                                    <span class="badge badge-secondary">Fiction</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Card -->
+                <div class="card bg-base-200 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-lg mb-3">
+                            <i class="fas fa-chart-bar text-secondary mr-2"></i>Rental Statistics
+                        </h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="font-medium">Total Rentals:</span>
+                                <span class="font-bold" id="detailTotalRentals">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Current Status:</span>
+                                <span class="font-medium" id="detailCurrentStatus">Available</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Copies Available:</span>
+                                <span class="text-sm text-base-content/60">1 of 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <h3 class="font-bold text-lg mb-3">
+                    <i class="fas fa-align-left text-accent mr-2"></i>Description
+                </h3>
+                <div class="bg-base-200 p-4 rounded-lg">
+                    <p id="detailBookDescription" class="text-base-content/80 leading-relaxed">
+                        Book description will appear here...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Rental Timeline -->
+            <div class="mb-4">
+                <h3 class="font-bold text-lg mb-3">
+                    <i class="fas fa-history text-info mr-2"></i>Rental History Timeline
+                </h3>
+                <div class="bg-base-200 p-4 rounded-lg">
+                    <div id="rentalTimeline">
+                        <!-- Timeline will be populated by JavaScript -->
+                        <div class="text-center py-8">
+                            <div class="loading loading-spinner loading-md text-primary"></div>
+                            <p class="mt-2 text-base-content/60">Loading timeline...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('bookDetailsModal').close()">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- Book Details Modal -->
+    <dialog id="bookDetailsModal" class="modal">
+        <div class="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Book Information Section -->
+                <div class="flex-1">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="avatar placeholder">
+                            <div class="bg-primary text-primary-content rounded-lg w-16 h-20">
+                                <i class="fas fa-book text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-primary mb-2" id="detailBookTitle">Book Title</h2>
+                            <p class="text-lg text-base-content/80 mb-1" id="detailBookAuthor">by Author</p>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <div class="badge badge-primary badge-outline" id="detailBookYear">2024</div>
+                                <div class="badge" id="detailBookStatus">
+                                    <i class="fas fa-check-circle mr-1"></i>Available
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-sm font-semibold text-base-content/70">ISBN:</span>
+                                <span class="text-sm text-base-content" id="detailBookISBN">123456789</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genres -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-2 flex items-center">
+                            <i class="fas fa-tags text-accent mr-2"></i>Genres
+                        </h3>
+                        <div class="flex flex-wrap gap-2" id="detailBookGenres">
+                            <!-- Genres will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-2 flex items-center">
+                            <i class="fas fa-align-left text-secondary mr-2"></i>Description
+                        </h3>
+                        <p class="text-base-content/80 leading-relaxed" id="detailBookDescription">
+                            Book description will appear here...
+                        </p>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="stat bg-base-200 rounded-box p-4">
+                            <div class="stat-title">Total Rentals</div>
+                            <div class="stat-value text-2xl" id="detailTotalRentals">0</div>
+                        </div>
+                        <div class="stat bg-base-200 rounded-box p-4">
+                            <div class="stat-title">Current Status</div>
+                            <div class="stat-value text-lg" id="detailCurrentStatus">Available</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Section -->
+                <div class="flex-1 lg:max-w-md">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-history text-info mr-2"></i>Rental Timeline
+                    </h3>
+                    <div class="timeline-container bg-base-200/50 rounded-lg p-4" style="min-height: 300px;">
+                        <div id="rentalTimeline">
+                            <!-- Timeline will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Legend -->
+                    <div class="mt-4 bg-base-200/30 rounded-lg p-3">
+                        <h4 class="text-sm font-semibold mb-2">Legend:</h4>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-1 border-2 border-dashed border-success"></div>
+                                <span>Available Period</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-1 bg-warning"></div>
+                                <span>Rented Period</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full border-2 border-info bg-base-100"></div>
+                                <span>Status Change</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <style>
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0;
+            margin-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 15px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid;
+            background: white;
+            z-index: 2;
+        }
+
+        .timeline-item.rented::before {
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .timeline-item.returned::before {
+            border-color: #10b981;
+            background: #dcfce7;
+        }
+
+        .timeline-item.available::before {
+            border-color: #6b7280;
+            background: #f3f4f6;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .timeline-line.available {
+            border-left: 2px dashed #10b981;
+        }
+
+        .timeline-line.rented {
+            background: #f59e0b;
+        }
+
+        .timeline-content {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-left: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .timeline-member {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .timeline-status {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .timeline-status.rented {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .timeline-status.returned {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .book-card-clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .book-card-clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-row-clickable {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .table-row-clickable:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+    </style>
+
     <script>
         // Global variables
         let allBooks = [];
@@ -391,6 +719,7 @@
         const addBookModal = document.getElementById('addBookModal');
         const editBookModal = document.getElementById('editBookModal');
         const deleteBookModal = document.getElementById('deleteBookModal');
+        const bookDetailsModal = document.getElementById('bookDetailsModal');
         const openAddBookModalBtn = document.getElementById('openAddBookModal');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const deleteBookTitle = document.getElementById('deleteBookTitle');
@@ -448,6 +777,21 @@
                     const btn = e.target.closest('.edit-book-btn');
                     const isbn = btn.getAttribute('data-isbn');
                     editBook(isbn);
+                }
+
+                // Handle book card/row clicks for details
+                if (e.target.closest('.book-card-clickable')) {
+                    e.preventDefault();
+                    const card = e.target.closest('.book-card-clickable');
+                    const isbn = card.getAttribute('data-isbn');
+                    showBookDetails(isbn);
+                }
+
+                if (e.target.closest('.table-row-clickable')) {
+                    e.preventDefault();
+                    const row = e.target.closest('.table-row-clickable');
+                    const isbn = row.getAttribute('data-isbn');
+                    showBookDetails(isbn);
                 }
             });
         }
@@ -510,10 +854,10 @@
             
             return `
                 <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-base-300">
-                    <div class="card-body">
+                    <div class="card-body book-card-clickable" data-isbn="${book.ISBN}" title="Click to view detailed information and rental history">
                         <div class="flex justify-between items-start mb-3">
                             <div class="badge badge-primary badge-outline">${book.PublicationYear || 'Unknown'}</div>
-                            <div class="dropdown dropdown-end">
+                            <div class="dropdown dropdown-end" onclick="event.stopPropagation()">
                                 <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </div>
@@ -541,7 +885,7 @@
                             <div class="text-xs text-base-content/50">
                                 ISBN: ${book.ISBN}
                             </div>
-                            <div class="btn-group">
+                            <div class="btn-group" onclick="event.stopPropagation()">
                                 <button class="btn btn-info btn-sm edit-book-btn" data-isbn="${book.ISBN}">
                                     <i class="fas fa-edit mr-1"></i>Edit
                                 </button>
@@ -549,6 +893,9 @@
                                     <i class="fas fa-trash mr-1"></i>Delete
                                 </button>
                             </div>
+                        </div>
+                        <div class="text-xs text-center mt-2 text-base-content/40">
+                            <i class="fas fa-mouse-pointer mr-1"></i>Click for detailed info
                         </div>
                     </div>
                 </div>
@@ -567,7 +914,7 @@
                 : '<span class="badge badge-ghost badge-xs">None</span>';
             
             return `
-                <tr class="hover">
+                <tr class="hover table-row-clickable" data-isbn="${book.ISBN}" title="Click to view detailed information and rental history">
                     <td class="font-semibold">${book.Title}</td>
                     <td>${book.Author}</td>
                     <td>
@@ -579,7 +926,7 @@
                         </div>
                     </td>
                     <td class="max-w-xs truncate">${description}</td>
-                    <td>
+                    <td onclick="event.stopPropagation()">
                         <div class="btn-group">
                             <button class="btn btn-info btn-xs edit-book-btn" data-isbn="${book.ISBN}">
                                 <i class="fas fa-edit mr-1"></i>Edit
@@ -748,6 +1095,180 @@
             
             // Close the modal
             deleteBookModal.close();
+        }
+
+        // Show book details modal
+        async function showBookDetails(isbn) {
+            try {
+                const response = await fetch(`/api/books/${isbn}/details`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch book details');
+                }
+                
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to fetch book details');
+                }
+                
+                const bookDetails = result.data;
+                populateBookDetailsModal(bookDetails);
+                bookDetailsModal.showModal();
+                
+            } catch (error) {
+                console.error('Error fetching book details:', error);
+                // Show a simple alert for now, could be improved with a toast notification
+                alert('Failed to load book details. Please try again.');
+            }
+        }
+
+        // Populate the book details modal
+        function populateBookDetailsModal(bookDetails) {
+            const { book, rentalHistory, currentlyBorrowed, totalRentals } = bookDetails;
+            
+            // Basic book information
+            document.getElementById('detailBookTitle').textContent = book.Title;
+            document.getElementById('detailBookAuthor').textContent = `by ${book.Author}`;
+            document.getElementById('detailBookYear').textContent = book.PublicationYear || 'Unknown';
+            document.getElementById('detailBookYearFull').textContent = book.PublicationYear || 'Unknown';
+            document.getElementById('detailBookISBN').textContent = book.ISBN;
+            document.getElementById('detailBookDescription').textContent = book.Description || 'No description available';
+            
+            // Status badge
+            const statusBadge = document.getElementById('detailBookStatus');
+            if (currentlyBorrowed) {
+                statusBadge.innerHTML = '<i class="fas fa-user mr-1"></i>Currently Borrowed';
+                statusBadge.className = 'badge badge-warning';
+            } else {
+                statusBadge.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Available';
+                statusBadge.className = 'badge badge-success';
+            }
+            
+            // Genres
+            const genresContainer = document.getElementById('detailBookGenres');
+            if (book.genres && book.genres.length > 0) {
+                genresContainer.innerHTML = book.genres
+                    .map(genre => `<span class="badge badge-secondary">${genre}</span>`)
+                    .join('');
+            } else {
+                genresContainer.innerHTML = '<span class="badge badge-ghost">No genres specified</span>';
+            }
+            
+            // Statistics
+            document.getElementById('detailTotalRentals').textContent = totalRentals;
+            document.getElementById('detailCurrentStatus').textContent = currentlyBorrowed ? 'Borrowed' : 'Available';
+            
+            // Create timeline
+            createRentalTimeline(rentalHistory, currentlyBorrowed);
+        }
+
+        // Create the rental timeline
+        function createRentalTimeline(rentalHistory, currentlyBorrowed) {
+            const timelineContainer = document.getElementById('rentalTimeline');
+            
+            if (!rentalHistory || rentalHistory.length === 0) {
+                timelineContainer.innerHTML = `
+                    <div class="text-center py-8 text-base-content/60">
+                        <i class="fas fa-book-open text-2xl mb-2"></i>
+                        <p>No rental history available</p>
+                        <p class="text-sm">This book has never been borrowed</p>
+                        <div class="mt-4 p-3 bg-info/10 rounded-lg">
+                            <p class="text-xs text-info">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Future versions will support multiple copies with individual timelines
+                            </p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let timelineHTML = '<div class="timeline">';
+            
+            // Future enhancement notice for multiple copies
+            timelineHTML += `
+                <div class="mb-4 p-3 bg-base-200 rounded-lg text-center">
+                    <div class="text-sm font-semibold mb-1">Single Copy Timeline</div>
+                    <div class="text-xs text-base-content/60">
+                        Currently showing history for 1 copy. Future versions will display individual copy timelines.
+                    </div>
+                </div>
+            `;
+            
+            // Sort rentals by date
+            const sortedRentals = [...rentalHistory].sort((a, b) => 
+                new Date(a.rentalDate) - new Date(b.rentalDate)
+            );
+            
+            // Add initial availability period if needed
+            if (sortedRentals.length > 0) {
+                timelineHTML += `
+                    <div class="timeline-item available">
+                        <div class="timeline-line available"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Book Added</div>
+                            <div class="timeline-status returned">Available in Library</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            sortedRentals.forEach((rental, index) => {
+                const rentalDate = new Date(rental.rentalDate).toLocaleDateString();
+                const returnDate = rental.returnedDate ? 
+                    new Date(rental.returnedDate).toLocaleDateString() : null;
+                
+                // Rental start event
+                timelineHTML += `
+                    <div class="timeline-item rented">
+                        <div class="timeline-line rented"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">${rentalDate}</div>
+                            <div class="timeline-member">Borrowed by: ${rental.memberName || 'Unknown Member'}</div>
+                            <div class="timeline-status rented">Rented</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Return event (if returned)
+                if (rental.returned && returnDate) {
+                    timelineHTML += `
+                        <div class="timeline-item returned">
+                            <div class="timeline-line available"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">${returnDate}</div>
+                                <div class="timeline-member">Returned by: ${rental.memberName || 'Unknown Member'}</div>
+                                <div class="timeline-status returned">Returned</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Current status
+            if (currentlyBorrowed) {
+                timelineHTML += `
+                    <div class="timeline-item rented">
+                        <div class="timeline-line rented"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Current Status</div>
+                            <div class="timeline-status rented">Currently Borrowed</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                timelineHTML += `
+                    <div class="timeline-item available">
+                        <div class="timeline-line available"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">Current Status</div>
+                            <div class="timeline-status returned">Available for Borrowing</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            timelineHTML += '</div>';
+            timelineContainer.innerHTML = timelineHTML;
         }
 
         // Utility function for debouncing
