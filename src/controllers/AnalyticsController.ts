@@ -8,7 +8,7 @@ export class AnalyticsController {
     this.analyticsService = new AnalyticsService();
   }
 
-  async getLibraryStats(req: Request, res: Response): Promise<void> {
+  async getLibraryStats(_req: Request, res: Response): Promise<void> {
     try {
       const stats = await this.analyticsService.getLibraryStats();
       res.json(stats);
@@ -21,7 +21,7 @@ export class AnalyticsController {
     }
   }
 
-  async getTotalBooks(req: Request, res: Response): Promise<void> {
+  async getTotalBooks(_req: Request, res: Response): Promise<void> {
     try {
       const count = await this.analyticsService.getTotalBooks();
       res.json({ totalBooks: count });
@@ -34,7 +34,7 @@ export class AnalyticsController {
     }
   }
 
-  async getTotalMembers(req: Request, res: Response): Promise<void> {
+  async getTotalMembers(_req: Request, res: Response): Promise<void> {
     try {
       const count = await this.analyticsService.getTotalMembers();
       res.json({ totalMembers: count });
@@ -47,7 +47,7 @@ export class AnalyticsController {
     }
   }
 
-  async getBorrowedBooksCount(req: Request, res: Response): Promise<void> {
+  async getBorrowedBooksCount(_req: Request, res: Response): Promise<void> {
     try {
       const count = await this.analyticsService.getBorrowedBooksCount();
       res.json({ borrowedBooks: count });
@@ -60,7 +60,7 @@ export class AnalyticsController {
     }
   }
 
-  async getAvailableBooksCount(req: Request, res: Response): Promise<void> {
+  async getAvailableBooksCount(_req: Request, res: Response): Promise<void> {
     try {
       const count = await this.analyticsService.getAvailableBooksCount();
       res.json({ availableBooks: count });

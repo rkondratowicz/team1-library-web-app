@@ -223,6 +223,7 @@ export class BookController {
         success: false,
         message: "Error retrieving books with copies",
         errors: [String(error)],
+
       });
     }
   }

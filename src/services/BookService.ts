@@ -4,7 +4,6 @@ import type { AvailableCopySummary, Copy, RentalWithCopyInfo } from "../models/C
 import { BookRepository, type Genre, type RentalHistoryEntry } from "../repositories/BookRepository.js";
 import { CopyRepository } from "../repositories/CopyRepository.js";
 
-
 export class BookService {
   private bookRepository: BookRepository;
   private copyRepository: CopyRepository;
@@ -46,6 +45,11 @@ export class BookService {
     return await this.copyRepository.getAllBooksWithCopies();
   }
 
+  // Get all books with their copy information
+  async getAllBooksWithCopies(): Promise<AvailableCopySummary[]> {
+    return await this.copyRepository.getAllBooksWithCopies();
+  }
+
   async getBookByTitle(title: string): Promise<Book | undefined> {
     return await this.bookRepository.findByTitle(title);
   }
@@ -62,7 +66,7 @@ export class BookService {
 
     const availableCopies = await this.copyRepository.findAvailableByISBN(book.ISBN);
     return availableCopies.length > 0;
-  }
+
 
   // Check if a specific copy is available
   async copyAvailable(copyID: number): Promise<boolean> {

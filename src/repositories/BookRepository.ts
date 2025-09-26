@@ -43,7 +43,7 @@ export class BookRepository {
       });
     });
   }
-  
+
   getRentals(): Promise<RentalWithCopyInfo[]> {
     return new Promise((resolve, reject) => {
       const sql = `

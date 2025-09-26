@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { DATABASE_PATH } from "../config/database.js";
 import type { CopyIDRow, MemberRental, RentalIDRow, RentalWithCopyIDRow } from "../models/Copy.js";
+
 import type { CreateMemberRequest, Member } from "../models/member.js";
 
 export class MemberRepository {
@@ -95,7 +96,6 @@ export class MemberRepository {
     });
   }
 
-
   getMemberRentals(memberID: number): Promise<MemberRental[]> {
     return new Promise((resolve, reject) => {
       const sql = `
@@ -119,10 +119,6 @@ export class MemberRepository {
       const checkSql = `
         SELECT r.rentalID, c.bookISBN 
         FROM rentals r
-        JOIN copy c ON r.copyID = c.copyID
-        WHERE r.memberID = ? AND r.copyID = ? AND (r.returned IS NULL OR r.returned = 0)
-        LIMIT 1
-      `;
 
       this.db.get(checkSql, [memberID, copyID], (err: unknown, row: { rentalID: number; bookISBN: string } | undefined) => {
         if (err) return reject(err);
@@ -147,7 +143,13 @@ export class MemberRepository {
             const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
             this.db.run(updateBookSql, [row.bookISBN], (err: Error | null) => {
               if (err) return reject(err);
-              resolve();
+
+              // Increase book availability
+              const updateBookSql = `UPDATE books SET available = available + 1 WHERE ISBN = ?`;
+              this.db.run(updateBookSql, [row.bookISBN], (err: Error | null) => {
+                if (err) return reject(err);
+                resolve();
+              });
             });
           });
         });
@@ -174,6 +176,33 @@ export class MemberRepository {
           if (!row) return reject(new Error("No active rental found for this book"));
 
           // Return the specific copy
+          this.returnCopy(memberID, row.copyID)
+            .then(() => resolve())
+            .catch((error) => reject(error));
+        }
+      );
+    });
+  }
+
+  // Legacy method - kept for backward compatibility during transition
+  returnBook(memberID: number, bookISBN: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Find an active rental for this member and book
+      const findRentalSql = `
+        SELECT r.copyID FROM rentals r
+        JOIN copy c ON r.copyID = c.copyID
+        WHERE r.memberID = ? AND c.bookISBN = ? AND (r.returned IS NULL OR r.returned = 0)
+        LIMIT 1
+      `;
+
+      this.db.get(
+        findRentalSql,
+        [memberID, bookISBN],
+        (err: unknown, row: CopyIDRow | undefined) => {
+          if (err) return reject(err);
+          if (!row) return reject(new Error("No active rental found for this book"));
+
+          // Return the found copy
           this.returnCopy(memberID, row.copyID)
             .then(() => resolve())
             .catch((error) => reject(error));
@@ -276,4 +305,10 @@ export interface MemberRentalData {
 // Interface for rental lookup row in returnBook method
 export interface RentalLookupRow {
   rentalID: number;
+}
+
+// Interface for rental with book ISBN used in returnCopy method
+interface RentalWithBookISBN {
+  rentalID: number;
+  bookISBN: string;
 }
