@@ -14,7 +14,7 @@ export class BookRepository {
       // First get all books
       this.db.all("SELECT * FROM books", (err: unknown, bookRows: Book[]) => {
         if (err) return reject(err);
-        
+
         if (bookRows.length === 0) {
           resolve([]);
           return;
@@ -31,16 +31,14 @@ export class BookRepository {
               [book.ISBN],
               (genreErr: unknown, genreRows: { Genre: string }[]) => {
                 if (genreErr) return bookReject(genreErr);
-                book.genres = genreRows.map(row => row.Genre);
+                book.genres = genreRows.map((row) => row.Genre);
                 bookResolve(book);
               }
             );
           });
         });
 
-        Promise.all(bookPromises)
-          .then(resolve)
-          .catch(reject);
+        Promise.all(bookPromises).then(resolve).catch(reject);
       });
     });
   }
@@ -66,7 +64,7 @@ export class BookRepository {
             [row.ISBN],
             (genreErr: unknown, genreRows: { Genre: string }[]) => {
               if (genreErr) return reject(genreErr);
-              row.genres = genreRows.map(genreRow => genreRow.Genre);
+              row.genres = genreRows.map((genreRow) => genreRow.Genre);
               resolve(row);
             }
           );
@@ -87,7 +85,7 @@ export class BookRepository {
         [searchPattern, searchPattern, searchPattern],
         (err: unknown, bookRows: Book[]) => {
           if (err) return reject(err);
-          
+
           if (bookRows.length === 0) {
             resolve([]);
             return;
@@ -104,16 +102,14 @@ export class BookRepository {
                 [book.ISBN],
                 (genreErr: unknown, genreRows: { Genre: string }[]) => {
                   if (genreErr) return bookReject(genreErr);
-                  book.genres = genreRows.map(row => row.Genre);
+                  book.genres = genreRows.map((row) => row.Genre);
                   bookResolve(book);
                 }
               );
             });
           });
 
-          Promise.all(bookPromises)
-            .then(resolve)
-            .catch(reject);
+          Promise.all(bookPromises).then(resolve).catch(reject);
         }
       );
     });
