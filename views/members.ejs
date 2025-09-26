@@ -380,6 +380,621 @@
     <div id="toast-container" class="toast toast-top toast-end z-50"></div>
 
     <!-- Include JavaScript -->
-    <script src="/members.js"></script>
+    <script>
+      // Members Management JavaScript
+// ES6 Module for handling member operations
+console.log('testing');
+class MembersManager {
+    constructor() {
+        this.currentMembers = [];
+        this.selectedMemberIds = new Set();
+        this.currentPage = 1;
+        this.perPage = 10;
+        this.totalMembers = 0;
+        this.isEditMode = false;
+        this.currentMemberId = null;
+        
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadMembers();
+    }
+
+    bindEvents() {
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        
+        searchInput.addEventListener('input', this.debounce(() => {
+            this.handleSearch();
+        }, 300));
+        
+        searchBtn.addEventListener('click', () => {
+            this.handleSearch();
+        });
+
+        // Filter toggle
+        document.getElementById('filter-btn').addEventListener('click', () => {
+            this.toggleFilterOptions();
+        });
+
+        // Filter changes
+        document.getElementById('sort-select').addEventListener('change', () => {
+            this.loadMembers();
+        });
+        
+        document.getElementById('order-select').addEventListener('change', () => {
+            this.loadMembers();
+        });
+        
+        document.getElementById('per-page-select').addEventListener('change', () => {
+            this.perPage = parseInt(document.getElementById('per-page-select').value);
+            this.currentPage = 1;
+            this.loadMembers();
+        });
+
+        // Add member modal and form
+        document.getElementById('add-member-btn').addEventListener('click', () => {
+            document.getElementById('add-member-modal').showModal();
+        });
+
+        document.getElementById('add-member-form').addEventListener('submit', (e) => {
+            this.handleAddMember(e);
+        });
+
+        // Member details form
+        document.getElementById('edit-member-btn').addEventListener('click', () => {
+            this.toggleEditMode(true);
+        });
+        
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            this.toggleEditMode(false);
+        });
+        
+        document.getElementById('save-member-btn').addEventListener('click', () => {
+            this.handleUpdateMember();
+        });
+        
+        document.getElementById('delete-member-btn').addEventListener('click', () => {
+            this.handleDeleteMember();
+        });
+
+        // Select all checkbox
+        document.getElementById('select-all').addEventListener('change', (e) => {
+            this.handleSelectAll(e.target.checked);
+        });
+
+        // Bulk delete
+        document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+            this.handleBulkDelete();
+        });
+
+        // Pagination
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.loadMembers();
+            }
+        });
+        
+        document.getElementById('next-page').addEventListener('click', () => {
+            const totalPages = Math.ceil(this.totalMembers / this.perPage);
+            if (this.currentPage < totalPages) {
+                this.currentPage++;
+                this.loadMembers();
+            }
+        });
+    }
+
+    // Utility function for debouncing search input
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    async loadMembers() {
+        try {
+            this.showLoading(true);
+            
+            const response = await fetch('/api/members');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.currentMembers = data.data || [];
+                this.totalMembers = data.count || 0;
+                this.renderMembersTable();
+                this.updateMemberCount();
+                this.updatePagination();
+            } else {
+                this.showToast('Error loading members', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading members:', error);
+            this.showToast('Failed to load members', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    async handleSearch() {
+        const searchTerm = document.getElementById('search-input').value.trim();
+        
+        if (!searchTerm) {
+            this.loadMembers();
+            return;
+        }
+
+        try {
+            this.showLoading(true);
+            
+            const response = await fetch(`/api/members/search?q=${encodeURIComponent(searchTerm)}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.currentMembers = data.data || [];
+                this.totalMembers = data.count || 0;
+                this.renderMembersTable();
+                this.updateMemberCount();
+                this.updatePagination();
+            } else {
+                this.showToast('No members found', 'info');
+                this.currentMembers = [];
+                this.renderMembersTable();
+            }
+        } catch (error) {
+            console.error('Error searching members:', error);
+            this.showToast('Search failed', 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    toggleFilterOptions() {
+        const filterOptions = document.getElementById('filter-options');
+        const filterBtn = document.getElementById('filter-btn');
+        
+        if (filterOptions.classList.contains('hidden')) {
+            filterOptions.classList.remove('hidden');
+            filterBtn.classList.add('btn-active');
+        } else {
+            filterOptions.classList.add('hidden');
+            filterBtn.classList.remove('btn-active');
+        }
+    }
+
+    renderMembersTable() {
+        const tbody = document.getElementById('members-table-body');
+        
+        if (this.currentMembers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-12">
+                        <div class="flex flex-col items-center gap-4">
+                            <i class="fas fa-users text-4xl text-base-content/20"></i>
+                            <div>
+                                <h3 class="text-lg font-semibold text-base-content/70">No Members Found</h3>
+                                <p class="text-sm text-base-content/50 mt-2">
+                                    Try adjusting your search criteria or add a new member.
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = this.currentMembers.map(member => `
+            <tr class="hover:bg-base-300 cursor-pointer member-row" data-member-id="${member.id}">
+                <td>
+                    <label>
+                        <input type="checkbox" class="checkbox checkbox-sm member-checkbox" value="${member.id}" />
+                    </label>
+                </td>
+                <td class="font-mono font-semibold text-primary">#${member.id}</td>
+                <td>
+                    <div class="font-semibold">${member.Fname} ${member.Sname}</div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-envelope text-primary text-sm"></i>
+                        <span class="text-sm">${member.email}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-phone text-primary text-sm"></i>
+                        <span class="text-sm">${member.phone}</span>
+                    </div>
+                </td>
+                <td class="text-sm text-base-content/70">
+                    ${member.join_date ? new Date(member.join_date).toLocaleDateString() : 'N/A'}
+                </td>
+                <td>
+                    <div class="flex gap-1">
+                        <button class="btn btn-ghost btn-xs view-member-btn" data-member-id="${member.id}" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-xs edit-member-btn" data-member-id="${member.id}" title="Quick Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Bind row click events
+        document.querySelectorAll('.member-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (!e.target.closest('.member-checkbox') && !e.target.closest('button')) {
+                    const memberId = parseInt(row.dataset.memberId);
+                    this.loadMemberDetails(memberId);
+                }
+            });
+        });
+
+        // Bind view/edit button events
+        document.querySelectorAll('.view-member-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const memberId = parseInt(btn.dataset.memberId);
+                this.loadMemberDetails(memberId);
+            });
+        });
+
+        document.querySelectorAll('.edit-member-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const memberId = parseInt(btn.dataset.memberId);
+                this.loadMemberDetails(memberId);
+                setTimeout(() => this.toggleEditMode(true), 100);
+            });
+        });
+
+        // Bind checkbox events
+        document.querySelectorAll('.member-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                this.handleMemberSelect(parseInt(checkbox.value), checkbox.checked);
+            });
+        });
+    }
+
+    async loadMemberDetails(memberId) {
+        try {
+            this.currentMemberId = memberId;
+            
+            const response = await fetch(`/api/members/${memberId}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                this.displayMemberDetails(data.data);
+            } else {
+                this.showToast('Member not found', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading member details:', error);
+            this.showToast('Failed to load member details', 'error');
+        }
+    }
+
+    displayMemberDetails(member) {
+        // Hide empty state and show details form
+        document.getElementById('no-member-selected').classList.add('hidden');
+        document.getElementById('member-details-form').classList.remove('hidden');
+
+        // Populate form fields
+        document.getElementById('member-id').value = `#${member.id}`;
+        document.getElementById('member-fname').value = member.Fname;
+        document.getElementById('member-sname').value = member.Sname;
+        document.getElementById('member-email').value = member.email;
+        document.getElementById('member-phone').value = member.phone;
+        document.getElementById('member-address').value = member.address;
+        document.getElementById('member-city').value = member.city;
+        document.getElementById('member-postcode').value = member.postcode;
+        document.getElementById('member-join-date').value = member.join_date ? 
+            new Date(member.join_date).toLocaleDateString() : 'N/A';
+
+        // Reset to view mode
+        this.toggleEditMode(false);
+
+        // Highlight the selected row
+        document.querySelectorAll('.member-row').forEach(row => {
+            row.classList.remove('bg-primary/10');
+        });
+        const selectedRow = document.querySelector(`.member-row[data-member-id="${member.id}"]`);
+        if (selectedRow) {
+            selectedRow.classList.add('bg-primary/10');
+        }
+    }
+
+    toggleEditMode(isEdit) {
+        this.isEditMode = isEdit;
+        
+        const fields = ['member-fname', 'member-sname', 'member-email', 'member-phone', 
+                       'member-address', 'member-city', 'member-postcode'];
+        
+        fields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.readOnly = !isEdit;
+            if (isEdit) {
+                field.classList.add('input-primary');
+                field.classList.remove('input-bordered');
+            } else {
+                field.classList.remove('input-primary');
+                field.classList.add('input-bordered');
+            }
+        });
+
+        // Toggle buttons
+        document.getElementById('view-mode-buttons').classList.toggle('hidden', isEdit);
+        document.getElementById('edit-mode-buttons').classList.toggle('hidden', !isEdit);
+    }
+
+    async handleAddMember(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const memberData = {
+            Fname: formData.get('Fname').trim(),
+            Sname: formData.get('Sname').trim(),
+            email: formData.get('email').trim(),
+            phone: formData.get('phone').trim(),
+            address: formData.get('address').trim(),
+            city: formData.get('city').trim(),
+            postcode: formData.get('postcode').trim()
+        };
+
+        try {
+            const response = await fetch('/api/members', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(memberData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.showToast('Member added successfully!', 'success');
+                document.getElementById('add-member-modal').close();
+                e.target.reset();
+                this.loadMembers();
+            } else {
+                this.showToast(data.error || 'Failed to add member', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding member:', error);
+            this.showToast('Failed to add member', 'error');
+        }
+    }
+
+    async handleUpdateMember() {
+        if (!this.currentMemberId) {
+            this.showToast('No member selected', 'error');
+            return;
+        }
+
+        const memberData = {
+            Fname: document.getElementById('member-fname').value.trim(),
+            Sname: document.getElementById('member-sname').value.trim(),
+            email: document.getElementById('member-email').value.trim(),
+            phone: document.getElementById('member-phone').value.trim(),
+            address: document.getElementById('member-address').value.trim(),
+            city: document.getElementById('member-city').value.trim(),
+            postcode: document.getElementById('member-postcode').value.trim()
+        };
+
+        try {
+            const response = await fetch(`/api/members/${this.currentMemberId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(memberData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.showToast('Member updated successfully!', 'success');
+                this.toggleEditMode(false);
+                this.loadMembers();
+                this.loadMemberDetails(this.currentMemberId);
+            } else {
+                this.showToast(data.error || 'Failed to update member', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating member:', error);
+            this.showToast('Failed to update member', 'error');
+        }
+    }
+
+    async handleDeleteMember() {
+        if (!this.currentMemberId) {
+            this.showToast('No member selected', 'error');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/members/${this.currentMemberId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                this.showToast('Member deleted successfully!', 'success');
+                this.currentMemberId = null;
+                document.getElementById('no-member-selected').classList.remove('hidden');
+                document.getElementById('member-details-form').classList.add('hidden');
+                this.loadMembers();
+            } else {
+                this.showToast(data.error || 'Failed to delete member', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting member:', error);
+            this.showToast('Failed to delete member', 'error');
+        }
+    }
+
+    handleMemberSelect(memberId, isSelected) {
+        if (isSelected) {
+            this.selectedMemberIds.add(memberId);
+        } else {
+            this.selectedMemberIds.delete(memberId);
+        }
+
+        // Update bulk delete button
+        const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+        bulkDeleteBtn.disabled = this.selectedMemberIds.size === 0;
+        
+        if (this.selectedMemberIds.size > 0) {
+            bulkDeleteBtn.textContent = `Delete Selected (${this.selectedMemberIds.size})`;
+        } else {
+            bulkDeleteBtn.textContent = 'Delete Selected';
+        }
+
+        // Update select all checkbox
+        const selectAllCheckbox = document.getElementById('select-all');
+        const totalCheckboxes = document.querySelectorAll('.member-checkbox').length;
+        
+        if (this.selectedMemberIds.size === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (this.selectedMemberIds.size === totalCheckboxes) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    handleSelectAll(selectAll) {
+        document.querySelectorAll('.member-checkbox').forEach(checkbox => {
+            checkbox.checked = selectAll;
+            this.handleMemberSelect(parseInt(checkbox.value), selectAll);
+        });
+    }
+
+    async handleBulkDelete() {
+        if (this.selectedMemberIds.size === 0) {
+            this.showToast('No members selected', 'error');
+            return;
+        }
+
+        const count = this.selectedMemberIds.size;
+        if (!confirm(`Are you sure you want to delete ${count} member(s)? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const deletePromises = Array.from(this.selectedMemberIds).map(id =>
+                fetch(`/api/members/${id}`, { method: 'DELETE' })
+            );
+
+            await Promise.all(deletePromises);
+            
+            this.showToast(`${count} member(s) deleted successfully!`, 'success');
+            this.selectedMemberIds.clear();
+            this.currentMemberId = null;
+            document.getElementById('no-member-selected').classList.remove('hidden');
+            document.getElementById('member-details-form').classList.add('hidden');
+            this.loadMembers();
+        } catch (error) {
+            console.error('Error deleting members:', error);
+            this.showToast('Failed to delete some members', 'error');
+        }
+    }
+
+    updateMemberCount() {
+        const memberCount = document.getElementById('member-count');
+        if (this.totalMembers === 0) {
+            memberCount.textContent = 'No members found';
+        } else if (this.totalMembers === 1) {
+            memberCount.textContent = '1 member';
+        } else {
+            memberCount.textContent = `${this.totalMembers} members`;
+        }
+    }
+
+    updatePagination() {
+        const totalPages = Math.ceil(this.totalMembers / this.perPage);
+        const pageInfo = document.getElementById('page-info');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+
+        pageInfo.textContent = `Page ${this.currentPage} of ${totalPages || 1}`;
+        prevBtn.disabled = this.currentPage <= 1;
+        nextBtn.disabled = this.currentPage >= totalPages;
+    }
+
+    showLoading(show) {
+        const loading = document.getElementById('loading');
+        const tableBody = document.getElementById('members-table-body');
+        
+        if (show) {
+            loading.classList.remove('hidden');
+            tableBody.innerHTML = '';
+        } else {
+            loading.classList.add('hidden');
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        const alertClasses = {
+            'success': 'alert-success',
+            'error': 'alert-error',
+            'warning': 'alert-warning',
+            'info': 'alert-info'
+        };
+
+        const icons = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+
+        toast.className = `alert ${alertClasses[type] || 'alert-info'} mb-4`;
+        toast.innerHTML = `
+            <i class="${icons[type] || 'fas fa-info-circle'}"></i>
+            <span>${message}</span>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        // Auto-remove toast after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+}
+
+// Initialize the members manager when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new MembersManager();
+});
+    </script>
 </body>
 </html>
